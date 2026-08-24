@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { t, getLocalizedUrl } from '../i18n/utils';
+
+const lang = 'en';
+
+const steps = [
+  {
+    num: '01',
+    titleKey: 'how.step1.title',
+    bodyKey: 'how.step1.body',
+    details: 'You can upload pre-recorded audio or video files (MP3, WAV, MP4, MOV) or paste raw script transcripts directly into the studio. Our client-side analyzer accepts media up to 500MB without requiring any server uploads.',
+    icon: '🎙️',
+  },
+  {
+    num: '02',
+    titleKey: 'how.step2.title',
+    bodyKey: 'how.step2.body',
+    details: 'Choose from trending viral caption presets like Hormozi Punch (bold yellow active word pop), MrBeast (heavy stroke with cyan bounce), or Cinematic Box. Adjust reading speed (WPM), words per line, font size, and subtitle positioning (top, center, bottom).',
+    icon: '⚡',
+  },
+  {
+    num: '03',
+    titleKey: 'how.step3.title',
+    bodyKey: 'how.step3.body',
+    details: 'Export your timestamped subtitles in standard .SRT or .VTT format for YouTube, Premiere Pro, Final Cut, and DaVinci Resolve, or render and download the video directly with burned-in animated captions in your browser.',
+    icon: '🎬',
+  },
+];
+---
+
+<Layout
+  lang={lang}
+  path="/how-it-works"
+  title="How It Works — AI Subtitle Generator & Script Sync Guide"
+  description="Learn how to generate, synchronize, and animate subtitles from audio, video, or raw scripts. Complete guide to SRT, VTT, and video burn-in."
+>
+  <!-- Page Header Banner -->
+  <section class="bg-[var(--color-canvas)] border-b border-[var(--color-hairline)] pt-16 pb-12">
+    <div class="container-page max-w-4xl mx-auto text-center flex flex-col items-center gap-4">
+      <span class="eyebrow">{t(lang, 'nav.howItWorks')}</span>
+      <h1 class="display-xl text-[var(--color-ink)] font-extrabold">
+        {t(lang, 'how.title')}
+      </h1>
+      <p class="text-base text-[var(--color-body)] max-w-2xl leading-relaxed">
+        {t(lang, 'how.subtitle')}
+      </p>
+    </div>
+  </section>
+
+  <!-- 3-Step Detailed Walkthrough -->
+  <section class="py-16 md:py-24 bg-[var(--color-canvas-soft)]">
+    <div class="container-page max-w-4xl mx-auto flex flex-col gap-12">
+      {steps.map((step) => (
+        <div class="flex flex-col sm:flex-row gap-6 p-8 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 hover:shadow-l2 transition-shadow">
+          <div class="shrink-0 w-14 h-14 rounded-2xl bg-[var(--color-ink)] text-[var(--color-on-primary)] flex items-center justify-center text-lg font-bold font-mono shadow-l1">
+            {step.num}
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">{step.icon}</span>
+              <h2 class="display-sm text-[var(--color-ink)] font-bold">{t(lang, step.titleKey as any)}</h2>
+            </div>
+            <p class="text-base text-[var(--color-body)] leading-relaxed">
+              {t(lang, step.bodyKey as any)}
+            </p>
+            <p class="text-sm text-[var(--color-mute)] leading-relaxed border-t border-[var(--color-hairline)] pt-3 mt-1">
+              {step.details}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- In-Depth Technical Guide & SEO Documentation -->
+  <section class="py-16 md:py-24 bg-[var(--color-canvas)] border-t border-[var(--color-hairline)]">
+    <div class="container-page max-w-4xl mx-auto flex flex-col gap-16">
+
+      <!-- Section 1: Audio Transcription Engine -->
+      <article id="audio-guide" class="flex flex-col gap-4">
+        <h2 class="display-md text-[var(--color-ink)] font-bold">1. How Audio-to-Subtitle Transcription Works</h2>
+        <p class="text-sm md:text-base text-[var(--color-body)] leading-relaxed">
+          Modern speech-to-text engines analyze raw audio waveforms using deep neural networks to recognize phonemes and vocabulary. Subtitle Generator Free processes speech cues by calculating word boundaries down to milliseconds, ensuring captions appear and disappear in sync with natural vocal cadence.
+        </p>
+        <div class="p-5 rounded-xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)] font-mono text-xs text-[var(--color-body)] space-y-1">
+          <p class="text-[var(--color-ink)] font-bold">// Acoustic Synchronization Process</p>
+          <p>Audio Waveform &rarr; Phoneme Detection &rarr; Word Boundary Timestamping &rarr; Sentence Segmentation</p>
+        </div>
+      </article>
+
+      <!-- Section 2: Script to Subtitle Auto-Sync -->
+      <article id="script-guide" class="flex flex-col gap-4">
+        <h2 class="display-md text-[var(--color-ink)] font-bold">2. How Script-to-Subtitle Auto-Sync Works</h2>
+        <p class="text-sm md:text-base text-[var(--color-body)] leading-relaxed">
+          If you already have a prepared script, voiceover transcript, or song lyrics, you don't need to re-transcribe from scratch. Our script synchronizer uses an intelligent reading-pace algorithm (Words Per Minute / WPM):
+        </p>
+        <ul class="list-disc pl-5 text-sm text-[var(--color-body)] space-y-2">
+          <li><strong>Reading Pace Calculation:</strong> Maps average conversational speech (typically 150–170 WPM) to exact line durations.</li>
+          <li><strong>Punctuation Pausing:</strong> Automatically adds a natural 0.2s pause at commas and 0.4s at periods/question marks.</li>
+          <li><strong>Short-Form Optimization:</strong> Breaks long sentences into 3–5 word lines designed specifically for TikTok, Reels, and YouTube Shorts retention.</li>
+        </ul>
+      </article>
+
+      <!-- Section 3: SRT vs VTT Format Reference -->
+      <article id="srt-guide" class="flex flex-col gap-4">
+        <h2 class="display-md text-[var(--color-ink)] font-bold">3. Subtitle Format Guide: SRT vs. WebVTT</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          
+          <div class="p-6 rounded-2xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)] flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-bold text-[var(--color-ink)]">.SRT (SubRip)</h3>
+              <span class="px-2 py-0.5 text-xs rounded bg-[var(--color-canvas)] border border-[var(--color-hairline)] font-mono">Standard</span>
+            </div>
+            <p class="text-xs text-[var(--color-body)] leading-relaxed">
+              The universal standard for video editing software and social media. Supported by YouTube, Vimeo, Adobe Premiere Pro, Final Cut Pro, and DaVinci Resolve.
+            </p>
+            <pre class="p-3 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-hairline)] font-mono text-[11px] text-[var(--color-ink)] overflow-x-auto">1
+00:00:01,000 --> 00:00:03,500
+Generate viral subtitles free.</pre>
+          </div>
+
+          <div id="vtt-guide" class="p-6 rounded-2xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)] flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-bold text-[var(--color-ink)]">.VTT (WebVTT)</h3>
+              <span class="px-2 py-0.5 text-xs rounded bg-[var(--color-canvas)] border border-[var(--color-hairline)] font-mono">Web Native</span>
+            </div>
+            <p class="text-xs text-[var(--color-body)] leading-relaxed">
+              The W3C standard for HTML5 `<track>` video elements and web media players. Supports CSS styling, positioning, and custom alignment tags.
+            </p>
+            <pre class="p-3 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-hairline)] font-mono text-[11px] text-[var(--color-ink)] overflow-x-auto">WEBVTT
+
+1
+00:00:01.000 --> 00:00:03.500
+Generate viral subtitles free.</pre>
+          </div>
+
+        </div>
+      </article>
+
+      <!-- Section 4: Video SEO & Retention Strategy -->
+      <article id="seo-guide" class="flex flex-col gap-4">
+        <h2 class="display-md text-[var(--color-ink)] font-bold">4. Video SEO & Social Media Captioning Strategy</h2>
+        <p class="text-sm md:text-base text-[var(--color-body)] leading-relaxed">
+          Over 80% of videos on mobile platforms like Instagram, Facebook, and LinkedIn are watched on mute. Adding dynamic animated subtitles increases video completion rate, search engine crawlability (Google indexes SRT captions), and accessibility for hearing-impaired audiences.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="py-16 bg-[var(--color-contrast-section)] text-[var(--color-contrast-section-text)] border-t border-[var(--color-hairline)] text-center transition-colors">
+    <div class="container-page flex flex-col items-center gap-6">
+      <h2 class="display-md font-bold">{t(lang, 'cta.title')}</h2>
+      <a
+        href={getLocalizedUrl(lang, '/#subtitle-studio')}
+        class="inline-flex items-center h-12 px-8 text-sm font-semibold rounded-pill bg-[var(--color-contrast-section-btn-bg)] text-[var(--color-contrast-section-btn-text)] hover:opacity-90 transition-opacity shadow-l2"
+      >
+        {t(lang, 'cta.button')}
+      </a>
+    </div>
+  </section>
+</Layout>

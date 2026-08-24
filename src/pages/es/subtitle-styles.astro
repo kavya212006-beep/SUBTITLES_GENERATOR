@@ -1,0 +1,111 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { t, getLocalizedUrl } from '../../i18n/utils';
+
+const lang = 'es';
+
+const stylesList = [
+  {
+    id: 'hormozi',
+    name: 'Hormozi Punch',
+    tag: 'Shorts y Reels Virales',
+    description: 'Animación de palabras activas en amarillo brillante con sombras profundas para maximizar la retención.',
+    class: 'sub-style-hormozi',
+    sampleWords: ['CÓMO', 'ESCALAR', 'A', '$10M', 'RÁPIDO'],
+    activeIdx: 3,
+  },
+  {
+    id: 'beast',
+    name: 'MrBeast Pop',
+    tag: 'Alta Energía y Gaming',
+    description: 'Trazo negro grueso de 2px con palabra activa en azul cian vibrante.',
+    class: 'sub-style-beast',
+    sampleWords: ['SOBREVIVÍ', '50', 'HORAS', 'BAJO', 'EL', 'AGUA'],
+    activeIdx: 1,
+  },
+  {
+    id: 'cinematic',
+    name: 'Caja Cinemática',
+    tag: 'Documentales y Cine',
+    description: 'Fondo esmerilado translúcido que garantiza una legibilidad del 100% sobre cualquier fondo de video.',
+    class: 'sub-style-cinematic',
+    sampleWords: ['La', 'historia', 'jamás', 'contada'],
+    activeIdx: 1,
+  },
+  {
+    id: 'neon',
+    name: 'Cyberpunk Neón',
+    tag: 'Tecnología y Música',
+    description: 'Brillo exterior dual en cian eléctrico y rosa intenso para videos llamativos.',
+    class: 'sub-style-neon',
+    sampleWords: ['EL', 'FUTURO', 'DE', 'LA', 'IA'],
+    activeIdx: 1,
+  },
+  {
+    id: 'karaoke',
+    name: 'Onda Karaokê',
+    tag: 'Música y Voz',
+    description: 'Onda de resaltado verde vibrante y progresiva que guía la lectura.',
+    class: 'sub-style-karaoke',
+    sampleWords: ['Sigue', 'cada', 'palabra', 'al', 'ritmo'],
+    activeIdx: 2,
+  },
+  {
+    id: 'minimal',
+    name: 'Minimalista Limpio',
+    tag: 'Corporativo y Cursos',
+    description: 'Tipografía sobria y elegante con sutiles subrayados.',
+    class: 'sub-style-minimal',
+    sampleWords: ['La', 'simplicidad', 'es', 'elegancia'],
+    activeIdx: 1,
+  },
+];
+---
+
+<Layout
+  lang={lang}
+  path="/subtitle-styles"
+  title={t(lang, 'styles.title') + ' — Subtitle Generator Free'}
+  description="Explora estilos de subtítulos animados en tendencia (Hormozi, MrBeast, Cinemático, Neón, Karaoke)."
+>
+  <section class="bg-[var(--color-canvas)] border-b border-[var(--color-hairline)] pt-16 pb-12">
+    <div class="container-page max-w-4xl mx-auto text-center flex flex-col items-center gap-4">
+      <span class="eyebrow">{t(lang, 'nav.styles')}</span>
+      <h1 class="display-xl text-[var(--color-ink)] font-extrabold">{t(lang, 'styles.title')}</h1>
+      <p class="text-base text-[var(--color-body)] max-w-2xl leading-relaxed">
+        Elige entre nuestra colección de estilos diseñados para maximizar la retención de tus videos.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-24 bg-[var(--color-canvas-soft)]">
+    <div class="container-page max-w-6xl mx-auto flex flex-col gap-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {stylesList.map((style) => (
+          <div class="flex flex-col rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 hover:shadow-l3 hover:border-[var(--color-hairline-strong)] transition-all overflow-hidden">
+            <div class="w-full h-48 bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden border-b border-zinc-800">
+              <div class="absolute inset-0 bg-radial from-indigo-950/50 via-zinc-950 to-black"></div>
+              <div class:list={[style.class, 'text-xl md:text-2xl text-center relative z-10']}>
+                {style.sampleWords.map((w, idx) => (
+                  <span class:list={['inline-block mx-1', idx === style.activeIdx ? 'word-active' : '']}>
+                    {w}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div class="p-6 flex flex-col gap-3 flex-1">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-[var(--color-ink)]">{style.name}</h2>
+                <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-[var(--color-link-bg-soft)] text-[var(--color-link)]">{style.tag}</span>
+              </div>
+              <p class="text-xs text-[var(--color-body)] leading-relaxed">{style.description}</p>
+              <a href={getLocalizedUrl(lang, '/#subtitle-studio')} class="mt-auto w-full h-10 flex items-center justify-center text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-opacity">
+                Usar {style.name} en el Estudio
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,84 @@
+---
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+
+const faqs = [
+  {
+    q: 'Is Subtitle Generator Free completely free to use?',
+    a: 'Yes, 100% free with no hidden paywalls, no credit card requirements, and no watermarks on your videos or subtitle files.',
+  },
+  {
+    q: 'How do I generate subtitles from an existing script or text?',
+    a: 'Simply click the "Script to Subtitles" tab in our studio, paste your raw transcript or lyrics, adjust your preferred reading speed (WPM), and click "Auto-Generate Subtitle Cues". Our algorithm will segment the sentences into optimal lines and calculate exact timestamps automatically.',
+  },
+  {
+    q: 'Can I burn the animated subtitles directly into my video file?',
+    a: 'Yes! In the Live Video Studio tab, you can customize the caption animations, positions, and fonts, then click "Export Video (Burn-In Subtitles)" to render and download your video with hardcoded subtitles directly in your browser.',
+  },
+  {
+    q: 'What subtitle export formats are supported?',
+    a: 'You can export industry-standard .SRT (SubRip) files, .VTT (WebVTT) files for web players, and .TXT plaintext transcripts, as well as copy timestamped cues directly to your clipboard in one click.',
+  },
+  {
+    q: 'Is my audio and video data kept private and secure?',
+    a: 'Absolutely. Subtitle Generator Free operates client-side inside your browser sandbox. Your media files and scripts are processed locally and are never stored or uploaded to third-party databases.',
+  },
+  {
+    q: 'What video aspect ratios are supported for social media?',
+    a: 'Our studio supports 9:16 vertical (TikTok, Instagram Reels, YouTube Shorts), 16:9 widescreen (YouTube, TV, Presentations), and 1:1 square (Instagram feed, LinkedIn, Facebook).',
+  },
+];
+
+const schemaJson = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(faq => ({
+    "@type": "Question",
+    "name": faq.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.a
+    }
+  }))
+});
+---
+
+<section class="py-16 md:py-24 bg-[var(--color-canvas-soft)] border-t border-[var(--color-hairline)]">
+  <div class="container-page max-w-4xl mx-auto flex flex-col gap-10">
+    
+    <!-- Section Header -->
+    <div class="text-center max-w-2xl mx-auto flex flex-col gap-3">
+      <h2 class="display-lg text-[var(--color-ink)] font-bold">
+        Frequently Asked Questions
+      </h2>
+      <p class="text-sm md:text-base text-[var(--color-body)] leading-relaxed">
+        Everything you need to know about generating, styling, and exporting subtitles for free.
+      </p>
+    </div>
+
+    <!-- FAQ Accordion List -->
+    <div class="flex flex-col gap-3">
+      {faqs.map((faq, idx) => (
+        <details class="faq-item group p-5 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 hover:border-[var(--color-hairline-strong)] transition-all cursor-pointer">
+          <summary class="flex items-center justify-between text-base font-bold text-[var(--color-ink)] list-none select-none">
+            <span>{faq.q}</span>
+            <span class="text-lg text-[var(--color-mute)] group-open:rotate-45 transition-transform duration-200">
+              +
+            </span>
+          </summary>
+          <p class="text-sm text-[var(--color-body)] mt-3 leading-relaxed border-t border-[var(--color-hairline)] pt-3">
+            {faq.a}
+          </p>
+        </details>
+      ))}
+    </div>
+
+  </div>
+
+  <!-- JSON-LD FAQ Schema -->
+  <script type="application/ld+json" set:html={schemaJson}></script>
+</section>

@@ -1,0 +1,27 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { t, getLocalizedUrl } from '../../i18n/utils';
+const lang = 'de';
+---
+<Layout lang={lang} path="/about" title={t(lang,'about.title') + ' — Font Finder AI'}>
+  <section class="bg-[var(--color-canvas)] border-b border-[var(--color-hairline)]" style="padding-top:64px;padding-bottom:64px;">
+    <div class="container-page max-w-3xl mx-auto">
+      <h1 class="display-xl text-[var(--color-ink)]">{t(lang,'about.title')}</h1>
+    </div>
+  </section>
+  <section class="bg-[var(--color-canvas-soft)]" style="padding-top:96px;padding-bottom:96px;">
+    <div class="container-page max-w-3xl mx-auto flex flex-col gap-10">
+      {([['about.mission.title','about.mission.body'],['about.privacy.title','about.privacy.body'],['about.tech.title','about.tech.body']] as const).map(([tk,bk]) => (
+        <div>
+          <h2 class="display-md text-[var(--color-ink)]">{t(lang,tk)}</h2>
+          <p class="text-base text-[var(--color-body)] mt-3 leading-relaxed">{t(lang,bk)}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+  <section class="bg-[var(--color-canvas)]" style="padding-top:64px;padding-bottom:64px;">
+    <div class="container-page text-center">
+      <a href={getLocalizedUrl(lang,'/')} class="inline-flex items-center h-12 px-8 text-base font-medium rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-80 transition-opacity">{t(lang,'cta.button')}</a>
+    </div>
+  </section>
+</Layout>

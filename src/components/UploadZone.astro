@@ -1,0 +1,216 @@
+---
+import { t } from '../i18n/utils';
+
+interface Props { lang: string; }
+const { lang } = Astro.props;
+---
+
+<div class="upload-zone-wrapper flex flex-col gap-4">
+  <!-- Tabs -->
+  <div class="flex items-center gap-1 border-b border-[var(--color-hairline)]" role="tablist" aria-label="Upload method">
+    {['upload', 'url', 'paste'].map((tab, i) => (
+      <button
+        id={`tab-${tab}`}
+        role="tab"
+        aria-selected={i === 0}
+        aria-controls={`panel-${tab}`}
+        class:list={[
+          'upload-tab px-4 pb-3 text-sm font-medium border-b-2 transition-colors -mb-px',
+          i === 0
+            ? 'border-[var(--color-ink)] text-[var(--color-ink)]'
+            : 'border-transparent text-[var(--color-mute)] hover:text-[var(--color-body)]'
+        ]}
+      >
+        {t(lang, `upload.tab.${tab}` as any)}
+      </button>
+    ))}
+  </div>
+
+  <!-- Upload panel -->
+  <div id="panel-upload" role="tabpanel" aria-labelledby="tab-upload">
+    <label
+      id="dropzone"
+      for="file-input"
+      class="flex flex-col items-center justify-center gap-3 w-full min-h-[220px] border-2 border-dashed border-[var(--color-hairline)] rounded-xl cursor-pointer transition-all hover:border-[var(--color-link)] hover:bg-[var(--color-link-bg-soft)] group relative"
+      aria-label="Upload image for font detection"
+    >
+      <!-- Drop icon -->
+      <div class="w-14 h-14 rounded-xl bg-[var(--color-canvas-soft-2)] flex items-center justify-center group-hover:scale-105 transition-transform">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-mute)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <div class="text-center">
+        <p class="text-sm font-medium text-[var(--color-ink)]">{t(lang, 'upload.title')}</p>
+        <p class="text-xs text-[var(--color-mute)] mt-1">{t(lang, 'upload.subtitle')}</p>
+        <p class="text-xs text-[var(--color-mute)] mt-3">{t(lang, 'upload.supported')}</p>
+      </div>
+      <!-- Hidden input -->
+      <input
+        id="file-input"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        class="sr-only"
+        aria-hidden="true"
+      />
+      <!-- Loading overlay -->
+      <div id="analyzing-overlay" class="hidden absolute inset-0 bg-[var(--color-canvas)]/85 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+        <svg class="spinner w-8 h-8 text-[var(--color-link)]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5" stroke-dasharray="40 20" stroke-linecap="round"/>
+        </svg>
+        <p class="text-sm font-medium text-[var(--color-body)]">{t(lang, 'upload.analyzing')}</p>
+      </div>
+    </label>
+
+    <!-- Error message -->
+    <p id="upload-error" class="hidden text-sm text-[var(--color-error)] mt-2" role="alert" aria-live="polite"></p>
+
+    <!-- Sample images -->
+    <div class="flex items-center gap-3 mt-4">
+      <span class="text-xs text-[var(--color-mute)]">{t(lang, 'upload.sample')}:</span>
+      <div class="flex gap-2">
+        {[
+          { name: 'Logo', emoji: '🔤', text: 'Modern Sans' },
+          { name: 'Poster', emoji: '🎨', text: 'Display Script' },
+          { name: 'UI', emoji: '💻', text: 'Clean UI' },
+        ].map((sample, i) => (
+          <button
+            class="sample-btn flex items-center gap-1.5 px-3 py-1.5 text-xs text-[var(--color-body)] border border-[var(--color-hairline)] rounded-lg hover:border-[var(--color-link)] hover:text-[var(--color-link)] transition-colors"
+            data-sample={i}
+            aria-label={`Try ${sample.name} sample`}
+          >
+            <span aria-hidden="true">{sample.emoji}</span>
+            {sample.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- URL panel -->
+  <div id="panel-url" role="tabpanel" aria-labelledby="tab-url" class="hidden">
+    <div class="flex gap-2">
+      <input
+        id="url-input"
+        type="url"
+        placeholder={t(lang, 'upload.url.placeholder')}
+        class="flex-1 h-11 px-4 text-sm border border-[var(--color-hairline)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-link)] focus:ring-offset-1 bg-[var(--color-canvas)]"
+        aria-label="Image URL for font detection"
+      />
+      <button
+        id="url-analyze-btn"
+        class="px-5 h-11 text-sm font-medium text-[var(--color-on-primary)] bg-[var(--color-ink)] rounded-lg hover:opacity-80 transition-opacity"
+      >
+        {t(lang, 'upload.url.button')}
+      </button>
+    </div>
+  </div>
+
+  <!-- Paste panel -->
+  <div id="panel-paste" role="tabpanel" aria-labelledby="tab-paste" class="hidden">
+    <div class="flex flex-col items-center justify-center gap-3 min-h-[160px] border-2 border-dashed border-[var(--color-hairline)] rounded-xl bg-[var(--color-canvas-soft)]">
+      <span class="text-3xl" aria-hidden="true">📋</span>
+      <p class="text-sm text-[var(--color-body)] text-center px-4">{t(lang, 'upload.paste.hint')}</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.upload-tab');
+  const tabIds = ['upload', 'url', 'paste'];
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t, j) => {
+        const isActive = j === i;
+        t.setAttribute('aria-selected', String(isActive));
+        t.classList.toggle('border-[var(--color-ink)]', isActive);
+        t.classList.toggle('text-[var(--color-ink)]', isActive);
+        t.classList.toggle('border-transparent', !isActive);
+        t.classList.toggle('text-[var(--color-mute)]', !isActive);
+        const panel = document.getElementById(`panel-${tabIds[j]}`);
+        panel?.classList.toggle('hidden', !isActive);
+      });
+    });
+  });
+
+  // Drag & drop
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const overlay = document.getElementById('analyzing-overlay');
+  const errorMsg = document.getElementById('upload-error');
+
+  dropzone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('border-[var(--color-link)]', 'bg-[var(--color-link-bg-soft)]');
+  });
+
+  dropzone?.addEventListener('dragleave', () => {
+    dropzone.classList.remove('border-[var(--color-link)]', 'bg-[var(--color-link-bg-soft)]');
+  });
+
+  dropzone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files[0];
+    if (file) handleFile(file);
+  });
+
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) handleFile(file);
+  });
+
+  // Paste support
+  document.addEventListener('paste', (e) => {
+    const file = e.clipboardData?.files[0];
+    if (file?.type.startsWith('image/')) handleFile(file);
+  });
+
+  // Sample buttons → simulate detection
+  document.querySelectorAll<HTMLButtonElement>('.sample-btn').forEach(btn => {
+    btn.addEventListener('click', () => simulateAnalysis());
+  });
+
+  function handleFile(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      showError('File too large. Please use an image under 10MB.');
+      return;
+    }
+    if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
+      showError('Unsupported format. Please use PNG, JPG, or WEBP.');
+      return;
+    }
+    hideError();
+    simulateAnalysis();
+  }
+
+  function simulateAnalysis() {
+    overlay?.classList.remove('hidden');
+    overlay?.classList.add('flex');
+    setTimeout(() => {
+      overlay?.classList.add('hidden');
+      overlay?.classList.remove('flex');
+      // Show results section
+      const resultsSection = document.getElementById('results-section');
+      resultsSection?.classList.remove('hidden');
+      resultsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 2200);
+  }
+
+  function showError(msg: string) {
+    if (errorMsg) { errorMsg.textContent = msg; errorMsg.classList.remove('hidden'); }
+  }
+
+  function hideError() {
+    errorMsg?.classList.add('hidden');
+  }
+
+  // URL analyze button
+  document.getElementById('url-analyze-btn')?.addEventListener('click', () => {
+    const url = (document.getElementById('url-input') as HTMLInputElement)?.value;
+    if (url) simulateAnalysis();
+  });
+</script>

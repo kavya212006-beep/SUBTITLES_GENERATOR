@@ -1,0 +1,74 @@
+---
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+
+const features = [
+  {
+    icon: '🎯',
+    titleKey: 'features.accuracy.title',
+    bodyKey: 'features.accuracy.body',
+  },
+  {
+    icon: '🔥',
+    titleKey: 'features.viral.title',
+    bodyKey: 'features.viral.body',
+  },
+  {
+    icon: '📝',
+    titleKey: 'features.script.title',
+    bodyKey: 'features.script.body',
+  },
+  {
+    icon: '📦',
+    titleKey: 'features.formats.title',
+    bodyKey: 'features.formats.body',
+  },
+  {
+    icon: '🎬',
+    titleKey: 'features.burn.title',
+    bodyKey: 'features.burn.body',
+  },
+  {
+    icon: '✨',
+    titleKey: 'features.free.title',
+    bodyKey: 'features.free.body',
+  },
+];
+---
+
+<section class="py-16 md:py-24 bg-[var(--color-canvas)] border-t border-[var(--color-hairline)]">
+  <div class="container-page max-w-6xl mx-auto flex flex-col gap-12">
+    
+    <!-- Section Header -->
+    <div class="text-center max-w-2xl mx-auto flex flex-col gap-3">
+      <h2 class="display-lg text-[var(--color-ink)] font-bold">
+        {t(lang, 'features.title')}
+      </h2>
+      <p class="text-sm md:text-base text-[var(--color-body)] leading-relaxed">
+        {t(lang, 'features.subtitle')}
+      </p>
+    </div>
+
+    <!-- 6-Grid Feature Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {features.map((feat) => (
+        <div class="flex flex-col gap-3 p-6 rounded-2xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)] shadow-l1 hover:shadow-l3 hover:border-[var(--color-hairline-strong)] transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+            {feat.icon}
+          </div>
+          <h3 class="text-base font-bold text-[var(--color-ink)] mt-2">
+            {t(lang, feat.titleKey as any)}
+          </h3>
+          <p class="text-sm text-[var(--color-body)] leading-relaxed">
+            {t(lang, feat.bodyKey as any)}
+          </p>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>

@@ -1,0 +1,157 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { t, getLocalizedUrl } from '../i18n/utils';
+
+const lang = 'en';
+
+const stylesList = [
+  {
+    id: 'hormozi',
+    name: 'Hormozi Punch',
+    tag: 'Viral Shorts & Reels',
+    description: 'High-impact yellow active word animation with deep shadows that grab attention and boost completion rates on TikTok, Reels, and YouTube Shorts.',
+    class: 'sub-style-hormozi',
+    sampleWords: ['HOW', 'TO', 'SCALE', 'TO', '$10M', 'FAST'],
+    activeIdx: 4,
+    recommendedFor: 'Business podcasts, motivation, personal branding, fitness, coaching',
+  },
+  {
+    id: 'beast',
+    name: 'MrBeast Pop',
+    tag: 'High Energy & Gaming',
+    description: 'Heavy 2px black text stroke paired with bold electric cyan active word pop. Engineered for fast-paced entertainment and challenge videos.',
+    class: 'sub-style-beast',
+    sampleWords: ['I', 'SURVIVED', '50', 'HOURS', 'UNDERWATER'],
+    activeIdx: 1,
+    recommendedFor: 'Gaming, challenges, vlogs, high-energy entertainment',
+  },
+  {
+    id: 'cinematic',
+    name: 'Cinematic Box',
+    tag: 'Documentaries & Film',
+    description: 'Refined semi-transparent frosted backdrop box that ensures 100% legibility over any bright or chaotic video background.',
+    class: 'sub-style-cinematic',
+    sampleWords: ['The', 'unseen', 'journey', 'of', 'innovation'],
+    activeIdx: 2,
+    recommendedFor: 'Documentaries, interview clips, product launches, trailers',
+  },
+  {
+    id: 'neon',
+    name: 'Neon Cyberpunk',
+    tag: 'Tech & Music',
+    description: 'Vibrant dual-color outer glow in electric cyan and hot pink that makes videos stand out in crowded feeds.',
+    class: 'sub-style-neon',
+    sampleWords: ['FUTURE', 'OF', 'ARTIFICIAL', 'INTELLIGENCE'],
+    activeIdx: 2,
+    recommendedFor: 'Tech reviews, electronic music, DJ sets, creative reels',
+  },
+  {
+    id: 'karaoke',
+    name: 'Karaoke Wave',
+    tag: 'Music & Voiceovers',
+    description: 'Progressive vibrant green highlight wave that guides the viewer word-by-word with natural rhythm.',
+    class: 'sub-style-karaoke',
+    sampleWords: ['Follow', 'every', 'single', 'spoken', 'word'],
+    activeIdx: 3,
+    recommendedFor: 'Music lyrics, poetry, audiobooks, educational explainers',
+  },
+  {
+    id: 'minimal',
+    name: 'Minimalist Clean',
+    tag: 'Corporate & Education',
+    description: 'Understated, elegant typography with subtle underline highlights that look sophisticated and clean.',
+    class: 'sub-style-minimal',
+    sampleWords: ['Simplicity', 'is', 'the', 'ultimate', 'sophistication'],
+    activeIdx: 0,
+    recommendedFor: 'SaaS tutorials, educational courses, executive talks',
+  },
+];
+---
+
+<Layout
+  lang={lang}
+  path="/subtitle-styles"
+  title="Viral Subtitle Styles & Animation Presets — Subtitle Generator Free"
+  description="Explore trending animated subtitle styles (Hormozi, MrBeast, Cinematic, Neon, Karaoke). Apply viral caption animations to your videos for free."
+>
+  <!-- Page Header -->
+  <section class="bg-[var(--color-canvas)] border-b border-[var(--color-hairline)] pt-16 pb-12">
+    <div class="container-page max-w-4xl mx-auto text-center flex flex-col items-center gap-4">
+      <span class="eyebrow">Caption Style Library</span>
+      <h1 class="display-xl text-[var(--color-ink)] font-extrabold">
+        Viral Subtitle Animation Styles
+      </h1>
+      <p class="text-base text-[var(--color-body)] max-w-2xl leading-relaxed">
+        Choose from our curated collection of trending caption presets designed to maximize audience engagement and retention.
+      </p>
+    </div>
+  </section>
+
+  <!-- Styles Gallery Section -->
+  <section class="py-16 md:py-24 bg-[var(--color-canvas-soft)]">
+    <div class="container-page max-w-6xl mx-auto flex flex-col gap-12">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {stylesList.map((style) => (
+          <div class="flex flex-col rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 hover:shadow-l3 hover:border-[var(--color-hairline-strong)] transition-all overflow-hidden">
+            
+            <!-- Video Simulation Stage -->
+            <div class="w-full h-48 bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden border-b border-zinc-800">
+              <div class="absolute inset-0 bg-radial from-indigo-950/50 via-zinc-950 to-black"></div>
+              
+              <div class:list={[style.class, 'text-xl md:text-2xl text-center relative z-10']}>
+                {style.sampleWords.map((w, idx) => (
+                  <span class:list={['inline-block mx-1', idx === style.activeIdx ? 'word-active' : '']}>
+                    {w}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Content Details -->
+            <div class="p-6 flex flex-col gap-3 flex-1">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-[var(--color-ink)]">{style.name}</h2>
+                <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-[var(--color-link-bg-soft)] text-[var(--color-link)]">
+                  {style.tag}
+                </span>
+              </div>
+
+              <p class="text-xs text-[var(--color-body)] leading-relaxed">
+                {style.description}
+              </p>
+
+              <div class="pt-2 mt-auto border-t border-[var(--color-hairline)]">
+                <span class="text-[11px] font-semibold text-[var(--color-mute)] uppercase tracking-wider block mb-1">Best for:</span>
+                <p class="text-xs text-[var(--color-body)]">{style.recommendedFor}</p>
+              </div>
+
+              <a
+                href={getLocalizedUrl(lang, '/#subtitle-studio')}
+                class="mt-3 w-full h-10 flex items-center justify-center text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-opacity"
+              >
+                Use {style.name} in Studio
+              </a>
+            </div>
+
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA Band -->
+  <section class="py-16 bg-[var(--color-contrast-section)] text-[var(--color-contrast-section-text)] border-t border-[var(--color-hairline)] text-center transition-colors">
+    <div class="container-page flex flex-col items-center gap-6">
+      <h2 class="display-md font-bold">Create Your Custom Subtitle Style Now</h2>
+      <p class="text-sm opacity-80 max-w-xl">Upload your audio, video, or script and test any animation style in real time.</p>
+      <a
+        href={getLocalizedUrl(lang, '/#subtitle-studio')}
+        class="inline-flex items-center h-12 px-8 text-sm font-semibold rounded-pill bg-[var(--color-contrast-section-btn-bg)] text-[var(--color-contrast-section-btn-text)] hover:opacity-90 transition-opacity shadow-l2"
+      >
+        Open Free Studio
+      </a>
+    </div>
+  </section>
+</Layout>

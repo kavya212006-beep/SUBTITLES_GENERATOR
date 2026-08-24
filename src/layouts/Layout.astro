@@ -1,0 +1,155 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { isRTL, getAlternateUrls } from '../i18n/utils';
+
+interface Props {
+  lang?: string;
+  title?: string;
+  description?: string;
+  keywords?: string;
+  path?: string;
+  ogImage?: string;
+  ogType?: string;
+  schema?: Record<string, any> | Array<Record<string, any>>;
+}
+
+const {
+  lang = 'en',
+  title = 'Subtitle Generator Free — AI Audio, Video & Script Subtitles',
+  description = '100% Free AI Subtitle Generator: Transcribe speech from audio & video or auto-sync scripts. Animate viral Hormozi & Beast styles, preview live on video, and export SRT, VTT or MP4 in seconds.',
+  keywords = 'subtitle generator free, ai subtitle generator, auto subtitle generator, free subtitle generator, subtitle generator from audio, script to subtitle, video subtitle generator, invideo alternative free, auto captions, hormozi subtitles generator',
+  path = '/',
+  ogImage = 'https://subtitlegeneratorfree.com/og-image.png',
+  ogType = 'website',
+  schema,
+} = Astro.props;
+
+const dir = isRTL(lang) ? 'rtl' : 'ltr';
+const alternates = getAlternateUrls(path);
+const canonicalUrl = `https://subtitlegeneratorfree.com${path === '/' ? '' : path}`;
+
+// Locale mapping for Open Graph
+const ogLocaleMap: Record<string, string> = {
+  en: 'en_US',
+  es: 'es_ES',
+  fr: 'fr_FR',
+  de: 'de_DE',
+  ja: 'ja_JP',
+  zh: 'zh_CN',
+  ar: 'ar_AR',
+  'pt-br': 'pt_BR',
+};
+const currentOgLocale = ogLocaleMap[lang] || 'en_US';
+
+// Base Structured Data (JSON-LD)
+const baseSchemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Subtitle Generator Free',
+    url: 'https://subtitlegeneratorfree.com/',
+    description: 'Free AI-powered Subtitle Generator tool to transcribe audio/video, synchronize scripts, and export SRT/VTT/video.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Subtitle Generator Free',
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    featureList: [
+      'Speech to Subtitle Transcription',
+      'Script to Subtitle Auto-Sync',
+      'Live Video Subtitle Burn-In',
+      'Hormozi, MrBeast & Karaoke Animated Caption Presets',
+      'SRT and WebVTT Export',
+      '100% Free & No Watermarks',
+    ],
+  },
+];
+
+const allSchemas = schema
+  ? [...baseSchemas, ...(Array.isArray(schema) ? schema : [schema])]
+  : baseSchemas;
+---
+
+<!doctype html>
+<html lang={lang} dir={dir} class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Zero-FOUC Theme Script (Blocks rendering to prevent light/dark flash) -->
+    <script is:inline>
+      (function() {
+        try {
+          const stored = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (stored === 'dark' || (!stored && prefersDark)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        } catch (_) {}
+      })();
+    </script>
+    
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalUrl} />
+    
+    <!-- SEO Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords} />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)" />
+
+    <!-- Hreflang Multi-Language Alternates -->
+    {alternates.map(({ hreflang, href }) => (
+      <link rel="alternate" hreflang={hreflang} href={`https://subtitlegeneratorfree.com${href}`} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={`https://subtitlegeneratorfree.com${path === '/' ? '' : path}`} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Subtitle Generator Free — AI Captioning & Script Sync Studio" />
+    <meta property="og:site_name" content="Subtitle Generator Free" />
+    <meta property="og:locale" content={currentOgLocale} />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- JSON-LD Structured Data -->
+    {allSchemas.map((s) => (
+      <script type="application/ld+json" set:html={JSON.stringify(s)} />
+    ))}
+  </head>
+
+  <body class="min-h-screen flex flex-col bg-[var(--color-canvas-soft)] text-[var(--color-ink)] selection:bg-[var(--color-ink)] selection:text-[var(--color-on-primary)] transition-colors duration-200">
+    <Navbar lang={lang} />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>

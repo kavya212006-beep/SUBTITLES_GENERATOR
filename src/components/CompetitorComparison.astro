@@ -1,0 +1,68 @@
+---
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+
+const rows = [
+  { key: 'comparison.row1.name', us: true, invideo: 'Paid ($25/mo)', capcut: 'Paid Pro', kapwing: 'Watermarked' },
+  { key: 'comparison.row2.name', us: true, invideo: false, capcut: false, kapwing: false },
+  { key: 'comparison.row3.name', us: true, invideo: false, capcut: false, kapwing: false },
+  { key: 'comparison.row4.name', us: true, invideo: true, capcut: true, kapwing: 'Paid Only' },
+  { key: 'comparison.row5.name', us: true, invideo: 'Complex', capcut: false, kapwing: false },
+  { key: 'comparison.row6.name', us: true, invideo: true, capcut: true, kapwing: true },
+  { key: 'comparison.row7.name', us: true, invideo: 'Cloud Queue', capcut: 'App Install', kapwing: 'Cloud Queue' },
+];
+---
+
+<section class="py-16 md:py-24 bg-[var(--color-canvas-soft)] border-t border-[var(--color-hairline)]">
+  <div class="container-page max-w-5xl mx-auto flex flex-col gap-10">
+    
+    <!-- Section Header -->
+    <div class="text-center max-w-2xl mx-auto flex flex-col gap-3">
+      <h2 class="display-lg text-[var(--color-ink)] font-bold">
+        {t(lang, 'comparison.title')}
+      </h2>
+      <p class="text-sm md:text-base text-[var(--color-body)] leading-relaxed">
+        {t(lang, 'comparison.subtitle')}
+      </p>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="overflow-x-auto rounded-2xl border border-[var(--color-hairline)] bg-[var(--color-canvas)] shadow-l2">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[var(--color-hairline)] bg-[var(--color-canvas-soft)] text-xs font-bold uppercase tracking-wider text-[var(--color-mute)]">
+            <th class="p-4 sm:p-5">{t(lang, 'comparison.feature')}</th>
+            <th class="p-4 sm:p-5 text-center bg-[var(--color-link-bg-soft)] text-[var(--color-link)] font-extrabold">{t(lang, 'comparison.us')}</th>
+            <th class="p-4 sm:p-5 text-center">{t(lang, 'comparison.invideo')}</th>
+            <th class="p-4 sm:p-5 text-center">{t(lang, 'comparison.capcut')}</th>
+            <th class="p-4 sm:p-5 text-center">{t(lang, 'comparison.kapwing')}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--color-hairline)] text-sm">
+          {rows.map((row) => (
+            <tr class="hover:bg-[var(--color-canvas-soft)] transition-colors">
+              <td class="p-4 sm:p-5 font-semibold text-[var(--color-ink)]">{t(lang, row.key as any)}</td>
+              <td class="p-4 sm:p-5 text-center bg-[var(--color-link-bg-soft)]/50 font-bold text-[var(--color-ink)]">
+                {row.us === true ? <span class="text-emerald-500 text-lg">✓</span> : row.us}
+              </td>
+              <td class="p-4 sm:p-5 text-center text-[var(--color-body)]">
+                {row.invideo === true ? <span class="text-emerald-500 text-lg">✓</span> : row.invideo === false ? <span class="text-rose-400 text-lg">✕</span> : row.invideo}
+              </td>
+              <td class="p-4 sm:p-5 text-center text-[var(--color-body)]">
+                {row.capcut === true ? <span class="text-emerald-500 text-lg">✓</span> : row.capcut === false ? <span class="text-rose-400 text-lg">✕</span> : row.capcut}
+              </td>
+              <td class="p-4 sm:p-5 text-center text-[var(--color-body)]">
+                {row.kapwing === true ? <span class="text-emerald-500 text-lg">✓</span> : row.kapwing === false ? <span class="text-rose-400 text-lg">✕</span> : row.kapwing}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>

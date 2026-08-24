@@ -1,0 +1,112 @@
+---
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+  activeFilter?: string;
+}
+
+const { lang, activeFilter = 'all' } = Astro.props;
+
+const filters = [
+  { key: 'filter.all'       as const, id: 'all' },
+  { key: 'filter.freeOnly'  as const, id: 'free' },
+  { key: 'filter.googleFonts' as const, id: 'google' },
+  { key: 'filter.adobeFree' as const, id: 'adobe' },
+];
+---
+
+<div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+  <!-- Filter pills -->
+  <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Filter font results">
+    {filters.map(({ key, id }) => (
+      <button
+        id={`filter-${id}`}
+        data-filter={id}
+        class:list={[
+          'filter-pill px-4 h-8 text-sm rounded-pill-sm border transition-all',
+          id === activeFilter
+            ? 'bg-[var(--color-ink)] text-[var(--color-on-primary)] border-[var(--color-ink)]'
+            : 'bg-[var(--color-canvas)] text-[var(--color-body)] border-[var(--color-hairline)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)]'
+        ]}
+        aria-pressed={id === activeFilter}
+      >
+        {id === 'free' && (
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-free-text)] me-1.5 align-middle" aria-hidden="true"></span>
+        )}
+        {t(lang, key)}
+      </button>
+    ))}
+  </div>
+
+  <!-- Sort dropdown -->
+  <div class="flex items-center gap-2">
+    <label for="sort-select" class="text-xs text-[var(--color-mute)] whitespace-nowrap">
+      {t(lang, 'filter.sort')}
+    </label>
+    <select
+      id="sort-select"
+      class="text-sm border border-[var(--color-hairline)] rounded-md px-2 h-8 bg-[var(--color-canvas)] text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-link)] focus:ring-offset-1"
+    >
+      <option value="match">{t(lang, 'filter.sort.bestMatch')}</option>
+      <option value="az">{t(lang, 'filter.sort.az')}</option>
+    </select>
+  </div>
+</div>
+
+<script>
+  // Filter pills interactivity
+  const pills = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const filter = pill.dataset.filter ?? 'all';
+
+      // Update pill styles
+      pills.forEach(p => {
+        const isActive = p.dataset.filter === filter;
+        p.setAttribute('aria-pressed', String(isActive));
+        p.classList.toggle('bg-[var(--color-ink)]', isActive);
+        p.classList.toggle('text-[var(--color-on-primary)]', isActive);
+        p.classList.toggle('border-[var(--color-ink)]', isActive);
+        p.classList.toggle('bg-[var(--color-canvas)]', !isActive);
+        p.classList.toggle('text-[var(--color-body)]', !isActive);
+        p.classList.toggle('border-[var(--color-hairline)]', !isActive);
+      });
+
+      // Filter result cards
+      const cards = document.querySelectorAll<HTMLElement>('[data-font-type]');
+      cards.forEach(card => {
+        const type = card.dataset.fontType;
+        const show = filter === 'all'
+          || (filter === 'free' && (type === 'free' || type === 'google' || type === 'adobe'))
+          || (filter === 'google' && type === 'google')
+          || (filter === 'adobe' && type === 'adobe');
+
+        card.style.display = show ? '' : 'none';
+      });
+
+      // Show/hide no-results message
+      const noResults = document.getElementById('no-results');
+      const visibleCards = document.querySelectorAll<HTMLElement>('[data-font-type]:not([style*="display: none"])');
+      if (noResults) noResults.hidden = visibleCards.length > 0;
+    });
+  });
+
+  // Sort select
+  const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+  sortSelect?.addEventListener('change', () => {
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-font-name]'));
+    const container = cards[0]?.parentElement;
+    if (!container) return;
+
+    cards.sort((a, b) => {
+      if (sortSelect.value === 'az') {
+        return (a.dataset.fontName ?? '').localeCompare(b.dataset.fontName ?? '');
+      }
+      // Sort by confidence (data-confidence attribute)
+      return Number(b.dataset.confidence ?? 0) - Number(a.dataset.confidence ?? 0);
+    });
+    cards.forEach(card => container.appendChild(card));
+  });
+</script>

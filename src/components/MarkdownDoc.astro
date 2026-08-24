@@ -1,0 +1,325 @@
+---
+import { getEntry, render } from 'astro:content';
+
+interface Props {
+  postId: string;
+}
+
+const { postId } = Astro.props;
+
+let post = null;
+let Content = null;
+let headings = [];
+let errorMsg = "";
+
+try {
+  post = await getEntry('posts', postId);
+  if (post) {
+    const rendered = await render(post);
+    Content = rendered.Content;
+    headings = rendered.headings;
+  } else {
+    errorMsg = `Post "${postId}" not found.`;
+  }
+} catch (e) {
+  errorMsg = e instanceof Error ? e.message : String(e);
+}
+
+// Format date helper
+const formatDate = (date: Date) => {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+};
+---
+
+<div class="doc-container">
+  {errorMsg ? (
+    <div class="error-card">
+      <div class="error-icon">⚠️</div>
+      <p class="error-text">{errorMsg}</p>
+    </div>
+  ) : post && Content ? (
+    <article class="glass-card">
+      <header class="card-header">
+        <div class="meta-row">
+          <time datetime={post.data.pubDate.toISOString()} class="date-tag">
+            {formatDate(post.data.pubDate)}
+          </time>
+          <span class="divider">•</span>
+          <span class="author-tag">By {post.data.author}</span>
+        </div>
+        
+        <h1 class="post-title">{post.data.title}</h1>
+        <p class="post-description">{post.data.description}</p>
+        
+        {post.data.tags && post.data.tags.length > 0 && (
+          <div class="tags-container">
+            {post.data.tags.map((tag) => (
+              <span class="tag-badge">#{tag}</span>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <hr class="header-divider" />
+
+      <main class="post-content">
+        <Content />
+      </main>
+    </article>
+  ) : null}
+</div>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --bg-gradient: radial-gradient(circle at 50% 0%, hsl(220, 25%, 15%), hsl(220, 30%, 5%));
+    --card-bg: rgba(22, 28, 45, 0.65);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --accent-glow: hsla(240, 100%, 75%, 0.15);
+    --accent-color: hsl(240, 100%, 75%);
+    --accent-hover: hsl(240, 100%, 85%);
+    --text-primary: hsl(220, 20%, 95%);
+    --text-secondary: hsl(220, 15%, 75%);
+    --text-muted: hsl(220, 10%, 55%);
+    --code-bg: rgba(10, 12, 20, 0.85);
+  }
+
+  .doc-container {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-primary);
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    box-sizing: border-box;
+    /* Optimize rendering performance */
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 1000px;
+  }
+
+  /* Glassmorphic card styling */
+  .glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 3rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 0 50px var(--accent-glow);
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Header structure */
+  .card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .divider {
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  .date-tag {
+    color: var(--accent-color);
+  }
+
+  .post-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0.5rem 0;
+    background: linear-gradient(135deg, #ffffff 30%, var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.03em;
+  }
+
+  .post-description {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 300;
+  }
+
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .tag-badge {
+    background: rgba(115, 115, 255, 0.12);
+    border: 1px solid rgba(115, 115, 255, 0.2);
+    color: var(--accent-color);
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: default;
+  }
+
+  .tag-badge:hover {
+    background: rgba(115, 115, 255, 0.25);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(115, 115, 255, 0.25);
+  }
+
+  .header-divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(to right, var(--card-border), rgba(255,255,255,0.02));
+    margin: 2.5rem 0;
+  }
+
+  /* Markdown content styling */
+  .post-content {
+    font-size: 1.1rem;
+    line-height: 1.75;
+    color: var(--text-primary);
+  }
+
+  .post-content :global(h2) {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 2.5rem 0 1rem 0;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  .post-content :global(h3) {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 2rem 0 1rem 0;
+    color: #ffffff;
+  }
+
+  .post-content :global(p) {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-secondary);
+  }
+
+  .post-content :global(strong) {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .post-content :global(ul), .post-content :global(ol) {
+    margin: 0 0 1.5rem 0;
+    padding-left: 1.5rem;
+    color: var(--text-secondary);
+  }
+
+  .post-content :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Code block styling */
+  .post-content :global(pre) {
+    background-color: var(--code-bg) !important;
+    border: 1px solid var(--card-border);
+    padding: 1.5rem;
+    border-radius: 16px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .post-content :global(code) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.4rem;
+    border-radius: 6px;
+    color: var(--accent-color);
+  }
+
+  .post-content :global(pre code) {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* Link styling */
+  .post-content :global(a) {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(115, 115, 255, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .post-content :global(a:hover) {
+    color: var(--accent-hover);
+    border-bottom-color: var(--accent-hover);
+    background: rgba(115, 115, 255, 0.05);
+  }
+
+  /* Error Card */
+  .error-card {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    padding: 2rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .error-icon {
+    font-size: 2rem;
+  }
+
+  .error-text {
+    margin: 0;
+    color: hsl(0, 100%, 80%);
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .glass-card {
+      padding: 1.5rem;
+      border-radius: 16px;
+    }
+    
+    .post-title {
+      font-size: 2rem;
+    }
+  }
+</style>

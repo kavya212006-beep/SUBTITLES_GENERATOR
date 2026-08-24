@@ -1,0 +1,220 @@
+---
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+  fontName: string;
+  foundry: string;
+  category: 'Sans-serif' | 'Serif' | 'Display' | 'Script' | 'Monospace';
+  confidence: number;        // 0–100
+  isFree: boolean;
+  source: 'google' | 'adobe' | 'fontshare' | 'commercial';
+  sourceUrl: string;
+  previewText?: string;
+  pairsWith?: string;
+  delay?: number;             // stagger delay in ms
+}
+
+const {
+  lang,
+  fontName,
+  foundry,
+  category,
+  confidence,
+  isFree,
+  source,
+  sourceUrl,
+  pairsWith,
+  delay = 0,
+} = Astro.props;
+
+// Confidence arc calc (circumference = 2πr = 2 * π * 45 ≈ 283)
+const circumference = 283;
+const dashOffset = circumference - (confidence / 100) * circumference;
+
+// Color of confidence ring
+const arcColor = confidence >= 80 ? '#0070f3' : confidence >= 60 ? '#f5a623' : '#888888';
+
+// Font type for filtering
+const fontType = source === 'google' ? 'google' : source === 'adobe' ? 'adobe' : isFree ? 'free' : 'paid';
+
+// Source label
+const sourceLabels: Record<string, string> = {
+  google: 'Google Fonts', adobe: 'Adobe Fonts', fontshare: 'Fontshare', commercial: 'Commercial',
+};
+
+// Category badge color
+const catColors: Record<string, string> = {
+  'Sans-serif': 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 dark:border dark:border-blue-800/40',
+  'Serif':      'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border dark:border-purple-800/40',
+  'Display':    'bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 dark:border dark:border-pink-800/40',
+  'Script':     'bg-orange-50 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 dark:border dark:border-orange-800/40',
+  'Monospace':  'bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-zinc-300 dark:border dark:border-zinc-700/40',
+};
+
+const fontId = fontName.toLowerCase().replace(/\s+/g, '-');
+---
+
+<article
+  class="fade-up bg-[var(--color-canvas)] rounded-xl border border-[var(--color-hairline)] shadow-l3 overflow-hidden flex flex-col group hover:shadow-l4 transition-shadow"
+  data-font-type={fontType}
+  data-font-name={fontName}
+  data-confidence={confidence}
+  style={`animation-delay: ${delay}ms; opacity: 0;`}
+  aria-label={`${fontName} — ${confidence}% confidence`}
+>
+  <!-- Font preview band -->
+  <div
+    class="px-5 pt-5 pb-3 bg-[var(--color-canvas-soft)] border-b border-[var(--color-hairline)] min-h-[100px] flex items-center"
+    id={`preview-${fontId}`}
+    style={`font-family: '${fontName}', sans-serif;`}
+  >
+    <span
+      class="preview-text text-3xl font-semibold text-[var(--color-ink)] leading-tight tracking-tight select-none transition-all"
+      data-preview-target={fontId}
+      contenteditable="false"
+      aria-label="Font preview"
+    >
+      Aa Bb Cc
+    </span>
+  </div>
+
+  <!-- Card body -->
+  <div class="p-5 flex flex-col gap-4 flex-1">
+
+    <!-- Header row: name + confidence -->
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h3 class="display-sm text-[var(--color-ink)] leading-tight">{fontName}</h3>
+        <p class="text-xs text-[var(--color-mute)] mt-0.5">{foundry}</p>
+      </div>
+
+      <!-- Confidence arc -->
+      <div class="shrink-0 flex flex-col items-center" title={`${confidence}% ${t(lang, 'result.confidence')}`}>
+        <svg width="48" height="48" viewBox="0 0 100 100" aria-hidden="true">
+          <!-- Track -->
+          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-hairline)" stroke-width="8"/>
+          <!-- Arc -->
+          <circle
+            class="confidence-arc"
+            cx="50" cy="50" r="45"
+            fill="none"
+            stroke={arcColor}
+            stroke-width="8"
+            stroke-linecap="round"
+            stroke-dasharray={circumference}
+            stroke-dashoffset={dashOffset}
+            style={`--arc-target: ${dashOffset}; transform: rotate(-90deg); transform-origin: center;`}
+          />
+        </svg>
+        <span class="text-xs font-medium text-[var(--color-body)] -mt-1">{confidence}%</span>
+      </div>
+    </div>
+
+    <!-- Badges row -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Category badge -->
+      <span class={`text-xs px-2 py-0.5 rounded-full font-medium ${catColors[category] ?? 'bg-gray-100 text-gray-600'}`}>
+        {category}
+      </span>
+
+      <!-- Free/Paid badge -->
+      <span class:list={[
+        'text-xs px-2 py-0.5 rounded-full font-medium',
+        isFree
+          ? 'bg-[var(--color-free-bg)] text-[var(--color-free-text)]'
+          : 'bg-[var(--color-paid-bg)] text-[var(--color-paid-text)]'
+      ]}>
+        {isFree ? `✓ ${t(lang, 'result.free')}` : t(lang, 'result.paid')}
+      </span>
+
+      <!-- Source badge -->
+      <span class="text-xs text-[var(--color-mute)]">{sourceLabels[source]}</span>
+    </div>
+
+    <!-- Live preview input -->
+    <label class="flex flex-col gap-1.5">
+      <span class="sr-only">Preview text</span>
+      <input
+        type="text"
+        class="preview-input text-sm border border-[var(--color-hairline)] rounded-md px-3 py-2 text-[var(--color-ink)] bg-[var(--color-canvas-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--color-link)] focus:ring-offset-1 transition-all"
+        placeholder={t(lang, 'result.preview')}
+        data-preview-source={fontId}
+        aria-label={`Preview text in ${fontName}`}
+        style={`font-family: '${fontName}', sans-serif; font-size: 15px;`}
+      />
+    </label>
+
+    <!-- Pairs with -->
+    {pairsWith && (
+      <p class="text-xs text-[var(--color-mute)]">
+        {t(lang, 'result.pairsWith')}: <span class="text-[var(--color-body)] font-medium">{pairsWith}</span>
+      </p>
+    )}
+
+    <!-- CTA row -->
+    <div class="flex items-center gap-2 mt-auto pt-2">
+      <!-- Get Font -->
+      <a
+        href={sourceUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex-1 flex items-center justify-center gap-1.5 h-9 text-sm font-medium rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-80 transition-opacity"
+        aria-label={`Get ${fontName} — opens in new tab`}
+      >
+        {t(lang, 'result.getFont')}
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+          <path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </a>
+
+      <!-- Copy CSS -->
+      <button
+        class="copy-css-btn h-9 px-3 text-sm font-medium rounded-pill border border-[var(--color-hairline)] text-[var(--color-body)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] transition-colors"
+        data-font-name={fontName}
+        data-font-source={source}
+        aria-label={`Copy CSS for ${fontName}`}
+      >
+        {t(lang, 'result.copyCss')}
+      </button>
+    </div>
+  </div>
+</article>
+
+<script>
+  // Live preview input → preview span sync
+  document.querySelectorAll<HTMLInputElement>('.preview-input').forEach(input => {
+    const targetId = input.dataset.previewSource;
+    const target = document.querySelector<HTMLElement>(`[data-preview-target="${targetId}"]`);
+    if (!target) return;
+
+    input.addEventListener('input', () => {
+      target.textContent = input.value || 'Aa Bb Cc';
+    });
+  });
+
+  // Copy CSS button
+  document.querySelectorAll<HTMLButtonElement>('.copy-css-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.fontName ?? '';
+      const source = btn.dataset.fontSource ?? '';
+
+      let cssSnippet = '';
+      if (source === 'google') {
+        const slug = name.replace(/\s+/g, '+');
+        cssSnippet = `@import url('https://fonts.googleapis.com/css2?family=${slug}&display=swap');\n\nbody {\n  font-family: '${name}', sans-serif;\n}`;
+      } else {
+        cssSnippet = `body {\n  font-family: '${name}', sans-serif;\n}`;
+      }
+
+      try {
+        await navigator.clipboard.writeText(cssSnippet);
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+      } catch {
+        btn.textContent = 'Copy failed';
+      }
+    });
+  });
+</script>

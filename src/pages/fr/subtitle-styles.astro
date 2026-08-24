@@ -1,0 +1,46 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { t, getLocalizedUrl } from '../../i18n/utils';
+
+const lang = 'fr';
+
+const stylesList = [
+  { id: 'hormozi', name: 'Hormozi Punch', tag: 'Shorts & Reels', class: 'sub-style-hormozi', sampleWords: ['COMMENT', 'RÉUSSIR', 'EN', '2026'], activeIdx: 1 },
+  { id: 'beast', name: 'MrBeast Pop', tag: 'Gaming & Énergie', class: 'sub-style-beast', sampleWords: ['DÉFI', 'EXTRÊME', 'EN', 'DIRECT'], activeIdx: 1 },
+  { id: 'cinematic', name: 'Cadre Cinématique', tag: 'Films & Docs', class: 'sub-style-cinematic', sampleWords: ['Une', 'histoire', 'hors', 'du', 'commun'], activeIdx: 1 },
+  { id: 'neon', name: 'Cyberpunk Néon', tag: 'Tech & Musique', class: 'sub-style-neon', sampleWords: ['FUTUR', 'DE', 'LA', 'CRÉATION'], activeIdx: 0 },
+  { id: 'karaoke', name: 'Vague Karaoké', tag: 'Musique & Voix', class: 'sub-style-karaoke', sampleWords: ['Suivez', 'chaque', 'mot', 'au', 'rythme'], activeIdx: 2 },
+  { id: 'minimal', name: 'Minimaliste', tag: 'Entreprise & Tutos', class: 'sub-style-minimal', sampleWords: ['Simplicité', 'et', 'élégance'], activeIdx: 0 },
+];
+---
+
+<Layout lang={lang} path="/subtitle-styles" title={t(lang, 'styles.title') + ' — Subtitle Generator Free'}>
+  <section class="bg-[var(--color-canvas)] border-b border-[var(--color-hairline)] pt-16 pb-12">
+    <div class="container-page max-w-4xl mx-auto text-center flex flex-col items-center gap-4">
+      <span class="eyebrow">{t(lang, 'nav.styles')}</span>
+      <h1 class="display-xl text-[var(--color-ink)] font-extrabold">{t(lang, 'styles.title')}</h1>
+    </div>
+  </section>
+  <section class="py-16 md:py-24 bg-[var(--color-canvas-soft)]">
+    <div class="container-page max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {stylesList.map((style) => (
+        <div class="flex flex-col rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 overflow-hidden p-6 gap-4">
+          <div class="w-full h-40 bg-zinc-950 rounded-xl flex items-center justify-center p-4">
+            <div class:list={[style.class, 'text-xl text-center']}>
+              {style.sampleWords.map((w, idx) => (
+                <span class:list={['inline-block mx-1', idx === style.activeIdx ? 'word-active' : '']}>{w}</span>
+              ))}
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <h2 class="text-base font-bold text-[var(--color-ink)]">{style.name}</h2>
+            <span class="px-2 py-0.5 text-xs rounded-full bg-[var(--color-link-bg-soft)] text-[var(--color-link)] font-semibold">{style.tag}</span>
+          </div>
+          <a href={getLocalizedUrl(lang, '/#subtitle-studio')} class="mt-auto w-full h-10 flex items-center justify-center text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)]">
+            Utiliser dans le Studio
+          </a>
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>

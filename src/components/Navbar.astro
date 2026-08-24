@@ -1,0 +1,137 @@
+---
+import { t, getLocalizedUrl, isRTL } from '../i18n/utils';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props { lang: string; }
+const { lang } = Astro.props;
+const rtl = isRTL(lang);
+
+const navLinks = [
+  { key: 'nav.home' as const, path: '/' },
+  { key: 'nav.howItWorks' as const, path: '/how-it-works' },
+  { key: 'nav.styles' as const, path: '/subtitle-styles' },
+  { key: 'nav.about' as const, path: '/about' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header
+  class="sticky top-0 z-50 bg-[var(--color-canvas)]/90 border-b border-[var(--color-hairline)] backdrop-blur-md transition-colors"
+  style="height:64px;"
+  role="banner"
+>
+  <div class="container-page h-full flex items-center justify-between gap-4">
+
+    <!-- Logo -->
+    <a
+      href={getLocalizedUrl(lang, '/')}
+      class="flex items-center gap-2.5 shrink-0 group"
+      aria-label="Subtitle Generator Free — Home"
+    >
+      <!-- Logo mark with Subtitle CC icon -->
+      <div class="w-8 h-8 rounded-xl bg-[var(--color-ink)] flex items-center justify-center transition-transform group-hover:scale-105 shadow-l1">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-on-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="4" width="20" height="16" rx="4"></rect>
+          <path d="M7 15h3a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H7"></path>
+          <path d="M14 15h3a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-3"></path>
+        </svg>
+      </div>
+      <span class="text-sm font-bold text-[var(--color-ink)] tracking-tight hidden sm:block">
+        Subtitle Generator <span class="text-[var(--color-link)] font-semibold text-xs uppercase px-1.5 py-0.5 rounded-md bg-[var(--color-link-bg-soft)]">Free</span>
+      </span>
+    </a>
+
+    <!-- Desktop Nav Links -->
+    <nav class="hidden md:flex items-center gap-1" aria-label="Main navigation">
+      {navLinks.map(({ key, path }) => {
+        const href = getLocalizedUrl(lang, path);
+        const isActive = currentPath === href || (path !== '/' && currentPath.startsWith(href));
+        return (
+          <a
+            href={href}
+            class:list={[
+              'px-3.5 py-1.5 text-sm rounded-full transition-colors',
+              isActive
+                ? 'text-[var(--color-ink)] font-semibold bg-[var(--color-canvas-soft-2)]'
+                : 'text-[var(--color-body)] hover:text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)]'
+            ]}
+          >
+            {t(lang, key)}
+          </a>
+        );
+      })}
+    </nav>
+
+    <!-- Right Actions -->
+    <div class:list={['flex items-center gap-2 shrink-0', rtl && 'flex-row-reverse']}>
+      <!-- Theme Switcher -->
+      <ThemeToggle />
+
+      <!-- Language Switcher -->
+      <LanguageSwitcher lang={lang} currentPath={currentPath} />
+
+      <!-- Primary CTA Button -->
+      <a
+        href={getLocalizedUrl(lang, '/#subtitle-studio')}
+        class="hidden sm:inline-flex items-center justify-center h-9 px-4 text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-opacity shadow-l1"
+      >
+        {t(lang, 'nav.tryFree')}
+      </a>
+
+      <!-- Mobile Hamburger Button -->
+      <button
+        id="mobile-menu-btn"
+        class="md:hidden w-9 h-9 rounded-lg flex items-center justify-center text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)] transition-colors border border-[var(--color-hairline)]"
+        aria-label="Open mobile menu"
+        aria-expanded="false"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Mobile Navigation Drawer -->
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden fixed inset-x-0 top-16 bg-[var(--color-canvas)] border-b border-[var(--color-hairline)] p-6 shadow-2xl flex-col gap-4 z-50 transition-all"
+  >
+    <nav class="flex flex-col gap-2">
+      {navLinks.map(({ key, path }) => (
+        <a
+          href={getLocalizedUrl(lang, path)}
+          class="px-4 py-2.5 text-base font-semibold text-[var(--color-ink)] rounded-xl hover:bg-[var(--color-canvas-soft)] transition-colors"
+        >
+          {t(lang, key)}
+        </a>
+      ))}
+    </nav>
+
+    <div class="pt-4 border-t border-[var(--color-hairline)] flex flex-col gap-3">
+      <a
+        href={getLocalizedUrl(lang, '/#subtitle-studio')}
+        class="w-full h-11 flex items-center justify-center text-sm font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)]"
+      >
+        {t(lang, 'nav.tryFree')}
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const mobileBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  mobileBtn?.addEventListener('click', () => {
+    const isExpanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+    mobileBtn.setAttribute('aria-expanded', String(!isExpanded));
+    mobileMenu?.classList.toggle('hidden');
+    mobileMenu?.classList.toggle('flex');
+  });
+</script>

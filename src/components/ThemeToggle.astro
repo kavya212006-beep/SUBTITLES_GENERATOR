@@ -1,0 +1,115 @@
+---
+interface Props {
+  className?: string;
+}
+const { className = '' } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={[
+    'theme-toggle inline-flex items-center justify-center w-8 h-8 rounded-md text-[var(--color-body)] hover:text-[var(--color-ink)] hover:bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)] hover:border-[var(--color-hairline-strong)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-link)]',
+    className
+  ]}
+  aria-label="Toggle color theme"
+  title="Toggle color theme"
+>
+  <!-- Sun Icon (visible in Dark mode) -->
+  <svg
+    class="theme-toggle-sun hidden w-4 h-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2"></path>
+    <path d="M12 20v2"></path>
+    <path d="m4.93 4.93 1.41 1.41"></path>
+    <path d="m17.66 17.66 1.41 1.41"></path>
+    <path d="M2 12h2"></path>
+    <path d="M20 12h2"></path>
+    <path d="m6.34 17.66-1.41 1.41"></path>
+    <path d="m19.07 4.93-1.41 1.41"></path>
+  </svg>
+
+  <!-- Moon Icon (visible in Light mode) -->
+  <svg
+    class="theme-toggle-moon w-4 h-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+  </svg>
+</button>
+
+<script>
+  function updateThemeToggleIcons() {
+    const isDark = document.documentElement.classList.contains('dark');
+    document.querySelectorAll('.theme-toggle').forEach((btn) => {
+      const sun = btn.querySelector('.theme-toggle-sun');
+      const moon = btn.querySelector('.theme-toggle-moon');
+      if (isDark) {
+        sun?.classList.remove('hidden');
+        moon?.classList.add('hidden');
+        btn.setAttribute('aria-label', 'Switch to light theme');
+        btn.setAttribute('title', 'Switch to light theme');
+      } else {
+        sun?.classList.add('hidden');
+        moon?.classList.remove('hidden');
+        btn.setAttribute('aria-label', 'Switch to dark theme');
+        btn.setAttribute('title', 'Switch to dark theme');
+      }
+    });
+  }
+
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    
+    try {
+      localStorage.setItem('theme', newTheme);
+    } catch (_) {}
+
+    updateThemeToggleIcons();
+    window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme: newTheme } }));
+  }
+
+  // Bind click handlers to all theme toggle buttons on page
+  document.querySelectorAll('.theme-toggle').forEach((btn) => {
+    btn.addEventListener('click', toggleTheme);
+  });
+
+  // Sync icons with current HTML state
+  updateThemeToggleIcons();
+
+  // Listen to OS scheme changes if user hasn't set explicit manual preference
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      if (e.matches) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      updateThemeToggleIcons();
+    }
+  });
+</script>
