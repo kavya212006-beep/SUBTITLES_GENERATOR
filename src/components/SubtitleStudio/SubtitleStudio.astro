@@ -1,5 +1,5 @@
 ---
-import { t } from '../../i18n/utils';
+import { t } from "../../i18n/utils";
 
 interface Props {
   lang: string;
@@ -7,85 +7,138 @@ interface Props {
 const { lang } = Astro.props;
 
 const stylePresets = [
-  { id: 'hormozi', nameKey: 'styles.hormozi', icon: '🔥', desc: 'Bold yellow pop, high-energy retention' },
-  { id: 'beast', nameKey: 'styles.beast', icon: '⚡', desc: 'Thick black stroke with cyan bounce' },
-  { id: 'cinematic', nameKey: 'styles.cinematic', icon: '🎬', desc: 'Frosted dark pill box for film & docs' },
-  { id: 'neon', nameKey: 'styles.neon', icon: '💜', desc: 'Cyberpunk glowing cyan & pink' },
-  { id: 'karaoke', nameKey: 'styles.karaoke', icon: '🎤', desc: 'Smooth green progressive highlight' },
-  { id: 'minimal', nameKey: 'styles.minimal', icon: '✨', desc: 'Clean modern typography' },
+  {
+    id: "hormozi",
+    nameKey: "styles.hormozi",
+    icon: "🔥",
+    desc: "Bold yellow pop, high-energy retention",
+  },
+  {
+    id: "beast",
+    nameKey: "styles.beast",
+    icon: "⚡",
+    desc: "Thick black stroke with cyan bounce",
+  },
+  {
+    id: "tiktok",
+    nameKey: "styles.tiktok" as any,
+    icon: "🚨",
+    desc: "Vibrant red alert pill badge",
+  },
+  {
+    id: "karaoke",
+    nameKey: "styles.karaoke",
+    icon: "🎤",
+    desc: "Smooth green progressive highlight",
+  },
+  {
+    id: "cinematic",
+    nameKey: "styles.cinematic",
+    icon: "🎬",
+    desc: "Frosted dark pill box for film & docs",
+  },
+  {
+    id: "minimal",
+    nameKey: "styles.minimal",
+    icon: "✨",
+    desc: "Clean modern typography",
+  },
 ];
 ---
 
 <div id="subtitle-studio" class="w-full flex flex-col gap-8">
-
   <!-- ─── Studio Main Card ─────────────────────────────────── -->
-  <div class="bg-[var(--color-canvas)] rounded-2xl border border-[var(--color-hairline)] shadow-l3 overflow-hidden">
-
+  <div
+    class="bg-[var(--color-canvas)] rounded-2xl border border-[var(--color-hairline)] shadow-l3 overflow-hidden"
+  >
     <!-- Top Workflow Tabs Bar -->
-    <div class="flex items-center border-b border-[var(--color-hairline)] bg-[var(--color-canvas-soft)] px-4 pt-3 overflow-x-auto scrollbar-hide" role="tablist">
+    <div
+      class="flex items-center border-b border-[var(--color-hairline)] bg-[var(--color-canvas-soft)] px-4 pt-3 overflow-x-auto scrollbar-hide"
+      role="tablist"
+    >
       <button
         id="tab-btn-audio"
         role="tab"
         aria-selected="true"
         aria-controls="panel-audio"
-        class="studio-tab-btn flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 border-[var(--color-ink)] text-[var(--color-ink)] transition-colors whitespace-nowrap -mb-px"
+        class="studio-tab-btn flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 border-[var(--color-ink)] text-[var(--color-ink)] transition-colors whitespace-nowrap -mb-px cursor-pointer"
       >
         <span>🎙️</span>
-        <span>{t(lang, 'studio.tab.audio')}</span>
+        <span>{t(lang, "studio.tab.audio")}</span>
       </button>
       <button
         id="tab-btn-script"
         role="tab"
         aria-selected="false"
         aria-controls="panel-script"
-        class="studio-tab-btn flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 border-transparent text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors whitespace-nowrap -mb-px"
+        class="studio-tab-btn flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 border-transparent text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors whitespace-nowrap -mb-px cursor-pointer"
       >
         <span>📝</span>
-        <span>{t(lang, 'studio.tab.script')}</span>
+        <span>{t(lang, "studio.tab.script")}</span>
       </button>
       <button
         id="tab-btn-editor"
         role="tab"
         aria-selected="false"
         aria-controls="panel-editor"
-        class="studio-tab-btn flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 border-transparent text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors whitespace-nowrap -mb-px"
+        class="studio-tab-btn flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 border-transparent text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors whitespace-nowrap -mb-px cursor-pointer"
       >
         <span>🎬</span>
-        <span>{t(lang, 'studio.tab.editor')}</span>
-        <span class="ms-1 px-1.5 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-[var(--color-link-bg-soft)] text-[var(--color-link)]">Live</span>
+        <span>{t(lang, "studio.tab.editor")}</span>
+        <span
+          class="ms-1 px-1.5 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-[var(--color-link-bg-soft)] text-[var(--color-link)]"
+          >Live</span
+        >
       </button>
     </div>
 
     <!-- ─── TAB 1: Audio / Video Transcriber ─────────────────── -->
-    <div id="panel-audio" role="tabpanel" class="p-6 md:p-8 flex flex-col gap-6">
+    <div
+      id="panel-audio"
+      role="tabpanel"
+      class="p-6 md:p-8 flex flex-col gap-6"
+    >
       <div class="flex flex-col gap-1">
-        <h3 class="display-sm text-[var(--color-ink)]">{t(lang, 'studio.tab.audio')}</h3>
-        <p class="text-sm text-[var(--color-body)]">{t(lang, 'audio.drop.formats')}</p>
+        <h3 class="display-sm text-[var(--color-ink)]">
+          {t(lang, "studio.tab.audio")}
+        </h3>
+        <p class="text-sm text-[var(--color-body)]">
+          {t(lang, "audio.drop.formats")} (MP4, MOV, WebM, MP3, WAV, M4A, AAC)
+        </p>
       </div>
 
       <!-- Drag & Drop Upload Zone -->
       <label
         id="audio-dropzone"
         for="media-file-input"
-        class="flex flex-col items-center justify-center gap-4 w-full min-h-[220px] p-6 border-2 border-dashed border-[var(--color-hairline)] hover:border-[var(--color-link)] hover:bg-[var(--color-link-bg-soft)] rounded-2xl cursor-pointer transition-all group relative bg-[var(--color-canvas-soft)]"
+        class="flex flex-col items-center justify-center gap-4 w-full min-h-[230px] p-6 border-2 border-dashed border-[var(--color-hairline)] hover:border-[var(--color-link)] hover:bg-[var(--color-link-bg-soft)]/40 rounded-2xl cursor-pointer transition-all group relative bg-[var(--color-canvas-soft)] text-center"
       >
-        <div class="w-16 h-16 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-          🎙️
+        <div
+          class="w-16 h-16 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-hairline)] shadow-l1 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform"
+        >
+          🎬
         </div>
-        <div class="text-center">
-          <p class="text-base font-semibold text-[var(--color-ink)]">{t(lang, 'audio.drop.title')}</p>
-          <p class="text-xs text-[var(--color-mute)] mt-1">{t(lang, 'audio.drop.subtitle')}</p>
+        <div class="text-center max-w-md">
+          <p class="text-base font-semibold text-[var(--color-ink)]">
+            {t(lang, "audio.drop.title")}
+          </p>
+          <p class="text-xs text-[var(--color-mute)] mt-1.5 leading-relaxed">
+            Drag & drop any video or audio file. We'll automatically load your media, extract the speech cadence, and generate animated subtitles.
+          </p>
         </div>
 
         <input
           id="media-file-input"
           type="file"
-          accept="audio/*,video/*"
+          accept="video/*,audio/*,.mp4,.mov,.webm,.mkv,.mp3,.wav,.m4a,.aac,.ogg"
           class="sr-only"
         />
 
-        <!-- Loading & Whisper AI Progress Overlay -->
-        <div id="transcribe-loading" class="hidden absolute inset-0 bg-[var(--color-canvas)]/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 gap-4 z-20">
+        <!-- Loading Progress Overlay -->
+        <div
+          id="transcribe-loading"
+          class="hidden absolute inset-0 bg-[var(--color-canvas)]/95 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 gap-4 z-20"
+        >
           <div class="flex items-center gap-1.5 h-8">
             <div class="w-1.5 bg-[var(--color-link)] rounded-full waveform-bar-1"></div>
             <div class="w-1.5 bg-[var(--color-link)] rounded-full waveform-bar-2"></div>
@@ -94,27 +147,56 @@ const stylePresets = [
             <div class="w-1.5 bg-[var(--color-link)] rounded-full waveform-bar-5"></div>
           </div>
           <div class="flex flex-col items-center gap-2 max-w-sm w-full text-center">
-            <p id="transcribe-status-text" class="text-sm font-semibold text-[var(--color-ink)]">{t(lang, 'audio.analyzing')}</p>
-            <div class="w-full h-2.5 rounded-full bg-[var(--color-canvas-soft-2)] overflow-hidden border border-[var(--color-hairline)]">
-              <div id="transcribe-progress-bar" class="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all duration-300 w-0"></div>
+            <p
+              id="transcribe-status-text"
+              class="text-sm font-semibold text-[var(--color-ink)]"
+            >
+              {t(lang, "audio.analyzing")}
+            </p>
+            <div
+              class="w-full h-2.5 rounded-full bg-[var(--color-canvas-soft-2)] overflow-hidden border border-[var(--color-hairline)]"
+            >
+              <div
+                id="transcribe-progress-bar"
+                class="h-full bg-gradient-to-r from-[var(--color-link)] to-[var(--color-violet)] transition-all duration-300 w-0"
+              >
+              </div>
             </div>
-            <span id="transcribe-detail-text" class="text-[11px] text-[var(--color-mute)]">Running client-side AI Whisper model locally in your browser</span>
+            <span
+              id="transcribe-detail-text"
+              class="text-[11px] text-[var(--color-mute)]"
+              >Processing media file directly in your browser</span
+            >
           </div>
         </div>
       </label>
 
       <!-- Live Voice AI Recording & Demo Samples -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2"
+      >
         <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs font-medium text-[var(--color-mute)] uppercase tracking-wider">{t(lang, 'audio.sample.heading')}</span>
-          <button class="sample-audio-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all" data-sample="podcast">
-            {t(lang, 'audio.sample.podcast')}
+          <span
+            class="text-xs font-medium text-[var(--color-mute)] uppercase tracking-wider"
+            >{t(lang, "audio.sample.heading")}</span
+          >
+          <button
+            class="sample-audio-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all cursor-pointer"
+            data-sample="hormozi"
+          >
+            🔥 Hormozi Hook
           </button>
-          <button class="sample-audio-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all" data-sample="motivation">
-            {t(lang, 'audio.sample.motivation')}
+          <button
+            class="sample-audio-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all cursor-pointer"
+            data-sample="motivation"
+          >
+            ⚡ Viral Beast
           </button>
-          <button class="sample-audio-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all" data-sample="tutorial">
-            {t(lang, 'audio.sample.tutorial')}
+          <button
+            class="sample-audio-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all cursor-pointer"
+            data-sample="tutorial"
+          >
+            💡 Quick Tip
           </button>
         </div>
 
@@ -125,9 +207,11 @@ const stylePresets = [
             class="text-xs px-2.5 py-1.5 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] focus:outline-none focus:ring-1 focus:ring-[var(--color-link)] cursor-pointer"
             aria-label="Select speech language"
           >
-            <option value="en-US" selected>🇺🇸 English (US)</option>
+            <option value="auto" selected>🌐 Auto-Detect Language</option>
+            <option value="en-US">🇺🇸 English (US)</option>
             <option value="en-GB">🇬🇧 English (UK)</option>
             <option value="en-IN">🇮🇳 English (India)</option>
+            <option value="pt-BR">🇧🇷 Portuguese (Brasil)</option>
             <option value="es-ES">🇪🇸 Spanish (Español)</option>
             <option value="fr-FR">🇫🇷 French (Français)</option>
             <option value="de-DE">🇩🇪 German (Deutsch)</option>
@@ -135,74 +219,115 @@ const stylePresets = [
             <option value="ja-JP">🇯🇵 Japanese (日本語)</option>
             <option value="zh-CN">🇨🇳 Chinese (Mandarin)</option>
             <option value="ar-SA">🇸🇦 Arabic (العربية)</option>
-            <option value="pt-BR">🇧🇷 Portuguese (Brasil)</option>
             <option value="it-IT">🇮🇹 Italian (Italiano)</option>
           </select>
 
           <button
             id="live-speech-btn"
             type="button"
-            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-all shadow-l1 shrink-0"
+            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-all shadow-l1 shrink-0 cursor-pointer"
           >
             <span id="mic-icon">🎙️</span>
-            <span id="mic-label">Record Voice (Live AI Transcribe)</span>
-            <span id="mic-pulse" class="hidden w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+            <span id="mic-label">Record Voice (Live AI Speech)</span>
+            <span
+              id="mic-pulse"
+              class="hidden w-2 h-2 rounded-full bg-rose-500 animate-ping"
+            ></span>
           </button>
         </div>
       </div>
 
       <!-- Live Speech Real-time Preview Box -->
-      <div id="live-speech-preview-box" class="hidden p-4 rounded-xl bg-[var(--color-canvas-soft)] border border-emerald-500/30 text-xs flex flex-col gap-2 transition-all">
+      <div
+        id="live-speech-preview-box"
+        class="hidden p-4 rounded-xl bg-[var(--color-canvas-soft)] border border-emerald-500/30 text-xs flex flex-col gap-2 transition-all"
+      >
         <div class="flex items-center justify-between text-[var(--color-mute)]">
-          <span class="flex items-center gap-1.5 text-emerald-500 font-semibold text-xs">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span
+            class="flex items-center gap-1.5 text-emerald-500 font-semibold text-xs"
+          >
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"
+            ></span>
             Live Voice Recognition Active
           </span>
-          <span id="speech-timer" class="font-mono text-xs font-bold text-[var(--color-ink)]">00:00</span>
+          <span
+            id="speech-timer"
+            class="font-mono text-xs font-bold text-[var(--color-ink)]"
+            >00:00</span
+          >
         </div>
-        <p id="live-speech-preview-text" class="font-medium text-[var(--color-ink)] italic text-sm min-h-[22px]">
+        <p
+          id="live-speech-preview-text"
+          class="font-medium text-[var(--color-ink)] italic text-sm min-h-[22px]"
+        >
           Listening... Start speaking into your microphone.
         </p>
       </div>
 
-      <!-- Free AI Model Info Banner -->
-      <div class="p-3.5 rounded-xl bg-[var(--color-link-bg-soft)] border border-[var(--color-link)]/20 flex items-start gap-2.5 text-xs text-[var(--color-ink)]">
+      <!-- Privacy & Local Processing Banner -->
+      <div
+        class="p-3.5 rounded-xl bg-[var(--color-link-bg-soft)] border border-[var(--color-link)]/20 flex items-start gap-2.5 text-xs text-[var(--color-ink)]"
+      >
         <span class="text-base shrink-0">✨</span>
         <div class="flex flex-col gap-0.5">
-          <span class="font-bold">100% Free Client-Side AI Whisper & Web Speech Engine</span>
-          <span class="text-[var(--color-body)]">Transcribe uploaded video & audio files directly in your browser using local AI Whisper neural network. Zero subscriptions, zero server uploads, 100% private.</span>
+          <span class="font-bold"
+            >100% Free Client-Side Video & Audio Subtitle Engine</span
+          >
+          <span class="text-[var(--color-body)]"
+            >Your files are processed 100% locally in your browser. Fast rendering, zero server uploads, zero subscription limits.</span
+          >
         </div>
       </div>
     </div>
 
     <!-- ─── TAB 2: Script to Subtitle Synchronizer ───────────── -->
-    <div id="panel-script" role="tabpanel" class="hidden p-6 md:p-8 flex flex-col gap-6">
+    <div
+      id="panel-script"
+      role="tabpanel"
+      class="hidden p-6 md:p-8 flex flex-col gap-6"
+    >
       <div class="flex flex-col gap-1">
-        <h3 class="display-sm text-[var(--color-ink)]">{t(lang, 'script.title')}</h3>
-        <p class="text-sm text-[var(--color-body)]">{t(lang, 'script.subtitle')}</p>
+        <h3 class="display-sm text-[var(--color-ink)]">
+          {t(lang, "script.title")}
+        </h3>
+        <p class="text-sm text-[var(--color-body)]">
+          {t(lang, "script.subtitle")}
+        </p>
       </div>
 
       <div class="flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <label for="script-textarea" class="text-xs font-semibold uppercase tracking-wider text-[var(--color-mute)]">Raw Transcript / Dialogue</label>
-          <button id="insert-sample-script" class="text-xs font-medium text-[var(--color-link)] hover:underline">
-            {t(lang, 'script.sampleBtn')}
+          <label
+            for="script-textarea"
+            class="text-xs font-semibold uppercase tracking-wider text-[var(--color-mute)]"
+            >Raw Transcript / Dialogue / Content Script</label
+          >
+          <button
+            id="insert-sample-script"
+            class="text-xs font-medium text-[var(--color-link)] hover:underline cursor-pointer"
+          >
+            {t(lang, "script.sampleBtn")}
           </button>
         </div>
         <textarea
           id="script-textarea"
           rows="6"
           class="w-full p-4 text-sm rounded-xl border border-[var(--color-hairline)] bg-[var(--color-canvas-soft)] text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-link)] focus:ring-offset-1 font-sans transition-all placeholder:text-[var(--color-mute)]"
-          placeholder={t(lang, 'script.placeholder')}
-        ></textarea>
+          placeholder="Paste your video dialogue or script here... (e.g. This secret strategy got me 1 million views in 30 days without spending a dollar on ads...)"></textarea>
       </div>
 
       <!-- Pacing Controls -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)]">
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)]"
+      >
         <div class="flex flex-col gap-2">
           <div class="flex justify-between items-center text-xs font-medium">
-            <span class="text-[var(--color-body)]">{t(lang, 'script.wpm')}</span>
-            <span id="wpm-val" class="font-mono text-[var(--color-ink)] font-bold">160 WPM</span>
+            <span class="text-[var(--color-body)]">{t(lang, "script.wpm")}</span
+            >
+            <span
+              id="wpm-val"
+              class="font-mono text-[var(--color-ink)] font-bold">160 WPM</span
+            >
           </div>
           <input
             id="wpm-slider"
@@ -213,76 +338,114 @@ const stylePresets = [
             value="160"
             class="w-full accent-[var(--color-link)] cursor-pointer"
           />
-          <span class="text-[11px] text-[var(--color-mute)]">Standard conversational speaking pace is ~150-170 WPM.</span>
+          <span class="text-[11px] text-[var(--color-mute)]"
+            >Standard conversational speaking pace is ~150-170 WPM.</span
+          >
         </div>
 
         <div class="flex flex-col gap-2">
           <div class="flex justify-between items-center text-xs font-medium">
-            <span class="text-[var(--color-body)]">{t(lang, 'script.wordsPerLine')}</span>
-            <span id="words-val" class="font-mono text-[var(--color-ink)] font-bold">4 words</span>
+            <span class="text-[var(--color-body)]"
+              >{t(lang, "script.wordsPerLine")}</span
+            >
+            <span
+              id="words-val"
+              class="font-mono text-[var(--color-ink)] font-bold">3 words</span
+            >
           </div>
           <input
             id="words-slider"
             type="range"
-            min="2"
+            min="1"
             max="8"
             step="1"
-            value="4"
+            value="3"
             class="w-full accent-[var(--color-link)] cursor-pointer"
           />
-          <span class="text-[11px] text-[var(--color-mute)]">Shorter lines (3-5 words) achieve highest retention on Reels & TikTok.</span>
+          <span class="text-[11px] text-[var(--color-mute)]"
+            >Short lines (2-4 words) generate highest viewer retention on TikTok & Reels.</span
+          >
         </div>
       </div>
 
       <button
         id="generate-script-cues-btn"
-        class="inline-flex items-center justify-center gap-2 h-12 px-6 text-sm font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-opacity shadow-l2 self-start"
+        class="inline-flex items-center justify-center gap-2 h-12 px-6 text-sm font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-opacity shadow-l2 self-start cursor-pointer"
       >
         <span>⚡</span>
-        <span>{t(lang, 'script.generateBtn')}</span>
+        <span>{t(lang, "script.generateBtn")}</span>
       </button>
     </div>
 
     <!-- ─── TAB 3: Live Video Studio & Editor ────────────────── -->
-    <div id="panel-editor" role="tabpanel" class="hidden p-6 md:p-8 flex flex-col gap-8">
-      
+    <div
+      id="panel-editor"
+      role="tabpanel"
+      class="hidden p-6 md:p-8 flex flex-col gap-8"
+    >
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
         <!-- Left Column: Video Player & Subtitle Canvas (5 Cols) -->
         <div class="lg:col-span-5 flex flex-col gap-4">
           <div class="flex items-center justify-between">
-            <label for="custom-video-input" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-[var(--color-canvas)] border border-[var(--color-hairline)] text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all cursor-pointer">
+            <label
+              for="custom-media-input"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[var(--color-canvas)] border border-[var(--color-hairline)] text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all cursor-pointer"
+            >
               <span>📁</span>
-              <span>Upload Video</span>
-              <input id="custom-video-input" type="file" accept="video/*" class="sr-only" />
+              <span id="upload-media-btn-text">Upload Video / Audio</span>
+              <input
+                id="custom-media-input"
+                type="file"
+                accept="video/*,audio/*,.mp4,.mov,.webm,.mkv,.mp3,.wav,.m4a,.aac"
+                class="sr-only"
+              />
             </label>
             <!-- Aspect Ratio Switcher -->
-            <div class="flex items-center gap-1 bg-[var(--color-canvas-soft)] p-1 rounded-lg border border-[var(--color-hairline)] text-xs">
-              <button class="aspect-btn px-2 py-1 rounded font-medium bg-[var(--color-canvas)] text-[var(--color-ink)] shadow-l1" data-ratio="9-16">9:16</button>
-              <button class="aspect-btn px-2 py-1 rounded font-medium text-[var(--color-mute)] hover:text-[var(--color-ink)]" data-ratio="16-9">16:9</button>
-              <button class="aspect-btn px-2 py-1 rounded font-medium text-[var(--color-mute)] hover:text-[var(--color-ink)]" data-ratio="1-1">1:1</button>
+            <div
+              class="flex items-center gap-1 bg-[var(--color-canvas-soft)] p-1 rounded-lg border border-[var(--color-hairline)] text-xs"
+            >
+              <button
+                class="aspect-btn px-2.5 py-1 rounded font-medium bg-[var(--color-canvas)] text-[var(--color-ink)] shadow-l1 cursor-pointer"
+                data-ratio="9-16">9:16 (Reels)</button
+              >
+              <button
+                class="aspect-btn px-2.5 py-1 rounded font-medium text-[var(--color-mute)] hover:text-[var(--color-ink)] cursor-pointer"
+                data-ratio="16-9">16:9 (YouTube)</button
+              >
+              <button
+                class="aspect-btn px-2.5 py-1 rounded font-medium text-[var(--color-mute)] hover:text-[var(--color-ink)] cursor-pointer"
+                data-ratio="1-1">1:1 (Post)</button
+              >
             </div>
           </div>
 
-          <!-- Video Container Box -->
+          <!-- Video / Audio Container Box -->
           <div
             id="video-viewport"
-            class="relative w-full max-w-[340px] mx-auto aspect-[9/16] bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl border border-[var(--color-hairline)] flex items-center justify-center select-none group"
+            class="relative w-full max-w-[340px] mx-auto aspect-[9/16] bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl border border-[var(--color-hairline)] flex items-center justify-center select-none group transition-all duration-200"
           >
-            <!-- Canvas Animated Background Generator (Simulated Video) -->
-            <canvas id="motion-canvas" class="w-full h-full object-cover"></canvas>
-            
-            <!-- User HTML5 Video Tag (if video file loaded) -->
-            <video id="user-video" class="hidden w-full h-full object-cover" playsinline loop></video>
+            <!-- Canvas Animated Background Generator & Waveform -->
+            <canvas id="motion-canvas" class="w-full h-full object-cover"
+            ></canvas>
 
-            <!-- Subtitle Overlay Overlay Container -->
+            <!-- User HTML5 Video Tag -->
+            <video
+              id="user-video"
+              class="hidden w-full h-full object-contain bg-black"
+              playsinline
+              preload="auto"></video>
+
+            <!-- User HTML5 Audio Tag (for audio-only files) -->
+            <audio id="user-audio" class="hidden" preload="auto"></audio>
+
+            <!-- Subtitle Overlay Container -->
             <div
               id="subtitle-overlay-box"
-              class="absolute left-4 right-4 pointer-events-none transition-all flex justify-center text-center bottom-[15%]"
+              class="absolute left-4 right-4 pointer-events-none transition-all flex justify-center text-center bottom-[18%]"
             >
               <div
                 id="subtitle-rendered-text"
-                class="sub-style-hormozi text-2xl font-bold tracking-tight text-center max-w-full px-2 py-1 leading-snug transition-transform"
+                class="sub-style-hormozi text-2xl font-bold tracking-tight text-center max-w-full px-3 py-1.5 leading-snug transition-transform"
               >
                 <!-- Words injected dynamically by JS -->
                 GENERATE <span class="word-active">VIRAL</span> SUBTITLES
@@ -292,17 +455,32 @@ const stylePresets = [
             <!-- Big Play/Pause Button on Hover -->
             <button
               id="video-play-btn"
-              class="absolute w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center text-xl hover:scale-110 transition-transform shadow-lg group-hover:opacity-100 opacity-80"
-              aria-label="Play or pause video preview"
+              class="absolute w-14 h-14 rounded-full bg-white/25 backdrop-blur-md border border-white/40 text-white flex items-center justify-center text-xl hover:scale-110 transition-transform shadow-lg group-hover:opacity-100 opacity-80 cursor-pointer"
+              aria-label="Play or pause media preview"
             >
               <span id="play-icon">▶</span>
             </button>
+
+            <!-- Audio Playing Badge (if audio mode active) -->
+            <div
+              id="audio-badge"
+              class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[11px] font-medium flex items-center gap-1.5"
+            >
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="audio-filename-badge">Audio Track Active</span>
+            </div>
           </div>
 
           <!-- Player Controls Bar -->
-          <div class="flex flex-col gap-2 p-3 rounded-xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)]">
+          <div
+            class="flex flex-col gap-2.5 p-3 rounded-xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)]"
+          >
             <div class="flex items-center gap-3">
-              <button id="mini-play-btn" class="w-8 h-8 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-hairline)] text-xs text-[var(--color-ink)] flex items-center justify-center font-bold">
+              <button
+                id="mini-play-btn"
+                class="w-8 h-8 rounded-lg bg-[var(--color-canvas)] border border-[var(--color-hairline)] text-xs text-[var(--color-ink)] flex items-center justify-center font-bold hover:bg-[var(--color-ink)] hover:text-[var(--color-on-primary)] transition-colors cursor-pointer"
+                title="Play/Pause (Spacebar)"
+              >
                 ▶
               </button>
               <input
@@ -314,123 +492,281 @@ const stylePresets = [
                 step="0.1"
                 class="flex-1 accent-[var(--color-link)] cursor-pointer"
               />
-              <span id="time-display" class="font-mono text-xs font-medium text-[var(--color-mute)]">00:00 / 00:15</span>
+              <span
+                id="time-display"
+                class="font-mono text-xs font-medium text-[var(--color-mute)] whitespace-nowrap"
+                >00:00 / 00:15</span
+              >
+            </div>
+
+            <!-- Secondary Player Tools: Speed & Volume -->
+            <div class="flex items-center justify-between text-xs pt-1 border-t border-[var(--color-hairline)]">
+              <div class="flex items-center gap-2">
+                <span class="text-[var(--color-mute)]">Speed:</span>
+                <div class="flex items-center gap-1">
+                  {['0.75', '1', '1.25', '1.5'].map((spd) => (
+                    <button
+                      class:list={[
+                        'speed-btn px-2 py-0.5 rounded text-[11px] font-mono transition-colors cursor-pointer',
+                        spd === '1'
+                          ? 'bg-[var(--color-ink)] text-[var(--color-on-primary)]'
+                          : 'text-[var(--color-body)] hover:bg-[var(--color-canvas-soft-2)]'
+                      ]}
+                      data-speed={spd}
+                    >
+                      {spd}x
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  id="mute-toggle-btn"
+                  class="text-xs text-[var(--color-body)] hover:text-[var(--color-ink)] cursor-pointer"
+                  title="Toggle Mute"
+                >
+                  🔊
+                </button>
+                <input
+                  id="volume-slider"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value="1"
+                  class="w-16 accent-[var(--color-link)] cursor-pointer"
+                  title="Volume"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Right Column: Style Preset Selector & Position Controls (7 Cols) -->
+        <!-- Right Column: Content Creator Tools & Timeline (7 Cols) -->
         <div class="lg:col-span-7 flex flex-col gap-6">
-
           <!-- Style Preset Cards Grid -->
           <div class="flex flex-col gap-3">
             <div class="flex items-center justify-between">
-              <h4 class="text-sm font-bold uppercase tracking-wider text-[var(--color-ink)]">{t(lang, 'styles.title')}</h4>
-              <span class="text-xs text-[var(--color-mute)]">Click any style to preview instantly</span>
+              <h4
+                class="text-sm font-bold uppercase tracking-wider text-[var(--color-ink)]"
+              >
+                {t(lang, "styles.title")}
+              </h4>
+              <span class="text-xs text-[var(--color-mute)]"
+                >Click style to preview instantly</span
+              >
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="style-presets-grid">
-              {stylePresets.map((preset, idx) => (
-                <button
-                  class:list={[
-                    'style-preset-btn p-3.5 rounded-xl border text-start flex items-start gap-3 transition-all cursor-pointer',
-                    idx === 0
-                      ? 'border-[var(--color-link)] bg-[var(--color-link-bg-soft)] ring-2 ring-[var(--color-link)]/20'
-                      : 'border-[var(--color-hairline)] bg-[var(--color-canvas-soft)] hover:border-[var(--color-hairline-strong)]'
-                  ]}
-                  data-style={preset.id}
-                >
-                  <span class="text-2xl shrink-0" aria-hidden="true">{preset.icon}</span>
-                  <div class="flex flex-col">
-                    <span class="text-sm font-bold text-[var(--color-ink)]">{t(lang, preset.nameKey as any)}</span>
-                    <span class="text-xs text-[var(--color-mute)] mt-0.5 leading-snug">{preset.desc}</span>
-                  </div>
-                </button>
-              ))}
+            <div
+              class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
+              id="style-presets-grid"
+            >
+              {
+                stylePresets.map((preset, idx) => (
+                  <button
+                    class:list={[
+                      "style-preset-btn p-3 rounded-xl border text-start flex flex-col gap-1 transition-all cursor-pointer",
+                      idx === 0
+                        ? "border-[var(--color-link)] bg-[var(--color-link-bg-soft)] ring-2 ring-[var(--color-link)]/20"
+                        : "border-[var(--color-hairline)] bg-[var(--color-canvas-soft)] hover:border-[var(--color-hairline-strong)]",
+                    ]}
+                    data-style={preset.id}
+                  >
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-lg" aria-hidden="true">
+                        {preset.icon}
+                      </span>
+                      <span class="text-xs font-bold text-[var(--color-ink)] truncate">
+                        {t(lang, preset.nameKey as any) || preset.id}
+                      </span>
+                    </div>
+                    <span class="text-[11px] text-[var(--color-mute)] leading-tight line-clamp-2">
+                      {preset.desc}
+                    </span>
+                  </button>
+                ))
+              }
             </div>
           </div>
 
-          <!-- Position & Font Controls -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)]">
-            <div class="flex flex-col gap-2">
-              <span class="text-xs font-semibold text-[var(--color-body)]">{t(lang, 'editor.position')}</span>
-              <div class="flex gap-1">
-                <button class="pos-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] text-[var(--color-body)] hover:text-[var(--color-ink)]" data-pos="top">{t(lang, 'editor.posTop')}</button>
-                <button class="pos-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-hairline)] text-[var(--color-body)] hover:text-[var(--color-ink)]" data-pos="center">{t(lang, 'editor.posCenter')}</button>
-                <button class="pos-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-link)] bg-[var(--color-ink)] text-[var(--color-on-primary)]" data-pos="bottom">{t(lang, 'editor.posBottom')}</button>
+          <!-- Content Creator Tools Bar (Colors, Emojis, Case, Position) -->
+          <div
+            class="flex flex-col gap-4 p-4 rounded-xl bg-[var(--color-canvas-soft)] border border-[var(--color-hairline)]"
+          >
+            <!-- Row 1: Active Word Highlight Color & Text Case -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <!-- Color Palette -->
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-[var(--color-body)]">Highlight:</span>
+                <div class="flex items-center gap-1.5" id="color-palette">
+                  {[
+                    { color: '#facc15', label: 'Yellow' },
+                    { color: '#38bdf8', label: 'Cyan' },
+                    { color: '#4ade80', label: 'Emerald' },
+                    { color: '#ff0080', label: 'Hot Pink' },
+                    { color: '#ff5722', label: 'Flame' },
+                    { color: '#ffffff', label: 'White' },
+                  ].map((item, idx) => (
+                    <button
+                      class:list={[
+                        'color-dot-btn w-6 h-6 rounded-full border border-black/20 transition-transform hover:scale-110 cursor-pointer',
+                        idx === 0 ? 'ring-2 ring-offset-2 ring-[var(--color-ink)] scale-110' : ''
+                      ]}
+                      style={`background-color: ${item.color};`}
+                      data-color={item.color}
+                      title={item.label}
+                    ></button>
+                  ))}
+                </div>
+              </div>
+
+              <!-- Quick Case Switcher & Emojis Injector -->
+              <div class="flex items-center gap-2">
+                <div class="flex items-center rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] p-0.5 text-xs">
+                  <button id="case-upper-btn" class="px-2 py-1 rounded font-bold bg-[var(--color-ink)] text-[var(--color-on-primary)] cursor-pointer">UPPER</button>
+                  <button id="case-title-btn" class="px-2 py-1 rounded text-[var(--color-body)] hover:text-[var(--color-ink)] cursor-pointer">Title</button>
+                </div>
+
+                <button
+                  id="inject-emojis-btn"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[var(--color-canvas)] border border-[var(--color-hairline)] text-[var(--color-ink)] hover:border-[var(--color-link)] hover:text-[var(--color-link)] transition-all cursor-pointer"
+                  title="Auto-inject viral emojis into subtitles"
+                >
+                  <span>✨</span>
+                  <span>Auto Emojis</span>
+                </button>
               </div>
             </div>
 
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between items-center text-xs font-semibold">
-                <span class="text-[var(--color-body)]">{t(lang, 'editor.fontSize')}</span>
-                <span id="fontsize-label" class="font-mono text-[var(--color-ink)]">24px</span>
+            <!-- Row 2: Position & Font Size Sliders -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[var(--color-hairline)]">
+              <!-- Position Controls -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between text-xs font-semibold">
+                  <span class="text-[var(--color-body)]">{t(lang, "editor.position")}</span>
+                  <span id="pos-percent-label" class="font-mono text-[var(--color-ink)]">Bottom (18%)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="flex gap-1 shrink-0">
+                    <button class="pos-preset-btn px-2 py-1 text-xs font-medium rounded border border-[var(--color-hairline)] text-[var(--color-body)] hover:text-[var(--color-ink)] cursor-pointer" data-pos="80">Top</button>
+                    <button class="pos-preset-btn px-2 py-1 text-xs font-medium rounded border border-[var(--color-hairline)] text-[var(--color-body)] hover:text-[var(--color-ink)] cursor-pointer" data-pos="50">Mid</button>
+                    <button class="pos-preset-btn px-2 py-1 text-xs font-medium rounded border border-[var(--color-link)] bg-[var(--color-ink)] text-[var(--color-on-primary)] cursor-pointer" data-pos="18">Bot</button>
+                  </div>
+                  <input
+                    id="pos-slider"
+                    type="range"
+                    min="5"
+                    max="85"
+                    value="18"
+                    class="w-full accent-[var(--color-link)] cursor-pointer"
+                  />
+                </div>
               </div>
-              <input
-                id="fontsize-slider"
-                type="range"
-                min="16"
-                max="40"
-                value="24"
-                class="w-full accent-[var(--color-link)] cursor-pointer"
-              />
+
+              <!-- Font Size Slider -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex justify-between items-center text-xs font-semibold">
+                  <span class="text-[var(--color-body)]">{t(lang, "editor.fontSize")}</span>
+                  <span id="fontsize-label" class="font-mono text-[var(--color-ink)]">24px</span>
+                </div>
+                <input
+                  id="fontsize-slider"
+                  type="range"
+                  min="16"
+                  max="44"
+                  value="24"
+                  class="w-full accent-[var(--color-link)] cursor-pointer"
+                />
+              </div>
             </div>
           </div>
 
           <!-- Timeline & Cue Table Header -->
-          <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center justify-between pt-1">
             <div class="flex items-center gap-2">
-              <h4 class="text-sm font-bold uppercase tracking-wider text-[var(--color-ink)]">{t(lang, 'timeline.title')}</h4>
-              <span id="cue-count-badge" class="px-2 py-0.5 text-xs rounded-full bg-[var(--color-canvas-soft-2)] text-[var(--color-mute)] font-mono">6 cues</span>
+              <h4
+                class="text-sm font-bold uppercase tracking-wider text-[var(--color-ink)]"
+              >
+                {t(lang, "timeline.title")}
+              </h4>
+              <span
+                id="cue-count-badge"
+                class="px-2 py-0.5 text-xs rounded-full bg-[var(--color-canvas-soft-2)] text-[var(--color-mute)] font-mono"
+                >5 cues</span
+              >
             </div>
-            <button id="add-cue-btn" class="text-xs font-medium text-[var(--color-link)] hover:underline flex items-center gap-1">
-              {t(lang, 'timeline.add')}
+            <button
+              id="add-cue-btn"
+              class="text-xs font-semibold text-[var(--color-link)] hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>+</span>
+              <span>{t(lang, "timeline.add")}</span>
             </button>
           </div>
 
           <!-- Editable Cues Table Container -->
-          <div class="max-h-[280px] overflow-y-auto rounded-xl border border-[var(--color-hairline)] bg-[var(--color-canvas)] divide-y divide-[var(--color-hairline)] shadow-l1" id="cues-container">
-            <!-- Cues rendered by JS -->
+          <div
+            class="max-h-[300px] overflow-y-auto rounded-xl border border-[var(--color-hairline)] bg-[var(--color-canvas)] divide-y divide-[var(--color-hairline)] shadow-l1"
+            id="cues-container"
+          >
+            <!-- Cues rendered dynamically by JS -->
           </div>
-
         </div>
-
       </div>
 
       <!-- ─── Export Action Bar ─────────────────────────────── -->
-      <div class="pt-6 border-t border-[var(--color-hairline)] flex flex-wrap items-center justify-between gap-4">
+      <div
+        class="pt-6 border-t border-[var(--color-hairline)] flex flex-wrap items-center justify-between gap-4"
+      >
         <div class="flex flex-col">
-          <span class="text-sm font-bold text-[var(--color-ink)]">{t(lang, 'export.title')}</span>
-          <span class="text-xs text-[var(--color-mute)]">Universal formats ready for YouTube, TikTok, Reels, Premiere Pro & CapCut</span>
+          <span class="text-sm font-bold text-[var(--color-ink)]"
+            >{t(lang, "export.title")}</span
+          >
+          <span class="text-xs text-[var(--color-mute)]"
+            >Universal formats ready for TikTok, Reels, YouTube Shorts, Premiere Pro & CapCut</span
+          >
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <button id="burn-video-btn" class="h-10 px-5 text-xs font-semibold rounded-pill bg-gradient-to-r from-[var(--color-link)] to-[var(--color-violet)] text-white hover:opacity-90 transition-all shadow-l2 flex items-center gap-2">
+          <button
+            id="burn-video-btn"
+            class="h-10 px-5 text-xs font-semibold rounded-pill bg-gradient-to-r from-[var(--color-link)] to-[var(--color-violet)] text-white hover:opacity-90 transition-all shadow-l2 flex items-center gap-2 cursor-pointer"
+          >
             <span>🎬</span>
             <span id="burn-video-label">Download Video with Subtitles</span>
           </button>
-          <button id="export-srt-btn" class="h-10 px-4 text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-opacity shadow-l1 flex items-center gap-1.5">
+          <button
+            id="export-srt-btn"
+            class="h-10 px-4 text-xs font-semibold rounded-pill bg-[var(--color-ink)] text-[var(--color-on-primary)] hover:opacity-85 transition-opacity shadow-l1 flex items-center gap-1.5 cursor-pointer"
+          >
             <span>📥</span>
-            <span>{t(lang, 'export.srt')}</span>
+            <span>{t(lang, "export.srt")}</span>
           </button>
-          <button id="export-vtt-btn" class="h-10 px-4 text-xs font-semibold rounded-pill border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all flex items-center gap-1.5">
+          <button
+            id="export-vtt-btn"
+            class="h-10 px-4 text-xs font-semibold rounded-pill border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
             <span>📄</span>
-            <span>{t(lang, 'export.vtt')}</span>
+            <span>{t(lang, "export.vtt")}</span>
           </button>
-          <button id="export-txt-btn" class="h-10 px-4 text-xs font-semibold rounded-pill border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all flex items-center gap-1.5">
+          <button
+            id="export-txt-btn"
+            class="h-10 px-4 text-xs font-semibold rounded-pill border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] hover:border-[var(--color-hairline-strong)] hover:shadow-l1 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
             <span>📝</span>
-            <span>{t(lang, 'export.txt')}</span>
+            <span>{t(lang, "export.txt")}</span>
           </button>
-          <button id="copy-all-btn" class="h-10 px-4 text-xs font-semibold rounded-pill border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] transition-colors">
-            {t(lang, 'export.copy')}
+          <button
+            id="copy-all-btn"
+            class="h-10 px-4 text-xs font-semibold rounded-pill border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-body)] hover:text-[var(--color-ink)] transition-colors cursor-pointer"
+          >
+            {t(lang, "export.copy")}
           </button>
         </div>
       </div>
-
     </div>
-
   </div>
-
 </div>
 
 <!-- ─── Client Script Engine ───────────────────────────────── -->
@@ -444,130 +780,140 @@ const stylePresets = [
 
   // Preloaded Demo Samples
   const demoSamples: Record<string, SubtitleCue[]> = {
-    podcast: [
-      { id: '1', start: 0.0, end: 2.2, text: "WELCOME BACK TO THE PODCAST" },
-      { id: '2', start: 2.3, end: 4.8, text: "TODAY WE EXPLORE GENERATIVE AI" },
-      { id: '3', start: 4.9, end: 7.4, text: "HOW CREATORS ARE SCALING 10X" },
-      { id: '4', start: 7.5, end: 9.8, text: "WITH AUTOMATED VIDEO SUBTITLES" },
-      { id: '5', start: 9.9, end: 12.0, text: "AND ZERO MANUAL EDITING EFFORT" },
+    hormozi: [
+      { id: "1", start: 0.0, end: 2.2, text: "IF YOU WANT WHAT 1% HAVE 🔥" },
+      { id: "2", start: 2.3, end: 4.8, text: "DO WHAT 99% WON'T ⚡" },
+      { id: "3", start: 4.9, end: 7.2, text: "FOCUS EVERY SINGLE DAY 🎯" },
+      { id: "4", start: 7.3, end: 9.8, text: "CONSISTENCY ALWAYS WINS 🏆" },
+      { id: "5", start: 9.9, end: 12.5, text: "START CREATING TODAY 🚀" },
     ],
     motivation: [
-      { id: '1', start: 0.0, end: 2.5, text: "IF YOU WANT WHAT ONLY ONE PERCENT HAVE" },
-      { id: '2', start: 2.6, end: 5.5, text: "YOU MUST DO WHAT NINETY NINE PERCENT WON'T" },
-      { id: '3', start: 5.6, end: 8.8, text: "FOCUS EVERY SINGLE DAY ON YOUR GOALS" },
-      { id: '4', start: 8.9, end: 12.0, text: "BECAUSE CONSISTENCY ALWAYS BEATS TALENT" },
-      { id: '5', start: 12.1, end: 15.0, text: "START CREATING YOUR FUTURE TODAY" },
+      { id: "1", start: 0.0, end: 2.4, text: "I GAVE 100 STRANGERS $10,000 💰" },
+      { id: "2", start: 2.5, end: 5.0, text: "TO SURVIVE 24 HOURS HERE ⚡" },
+      { id: "3", start: 5.1, end: 7.5, text: "WATCH WHAT HAPPENS NEXT 😱" },
+      { id: "4", start: 7.6, end: 10.0, text: "THE FINAL CHALLENGE BEGINS 💥" },
     ],
     tutorial: [
-      { id: '1', start: 0.0, end: 2.4, text: "IN THIS QUICK CODING TUTORIAL" },
-      { id: '2', start: 2.5, end: 5.0, text: "WE WILL CONNECT OUR WEB APPLICATION" },
-      { id: '3', start: 5.1, end: 7.5, text: "DIRECTLY TO AN AI SPEECH ENGINE" },
-      { id: '4', start: 7.6, end: 10.0, text: "TO GENERATE ACCURATE SUBTITLES FAST" },
-    ]
+      { id: "1", start: 0.0, end: 2.4, text: "GENERATE VIRAL SUBTITLES FAST 🎬" },
+      { id: "2", start: 2.5, end: 5.0, text: "AUTO SYNC YOUR VIDEO & AUDIO ✨" },
+      { id: "3", start: 5.1, end: 7.6, text: "APPLY TRENDING HORMOZI STYLES 🔥" },
+      { id: "4", start: 7.7, end: 10.5, text: "EXPORT FREE SRT OR BURNED VIDEO 🚀" },
+    ],
   };
 
   // State
-  let currentCues: SubtitleCue[] = [...demoSamples.motivation];
-  let currentStyle = 'hormozi';
+  let currentCues: SubtitleCue[] = [...demoSamples.hormozi];
+  let currentStyle = "hormozi";
+  let activeColor = "#facc15";
   let isPlaying = false;
   let currentTime = 0;
-  let duration = 15.0;
+  let duration = 12.5;
   let animFrameId: number | null = null;
   let lastTimestamp = 0;
+  let isCustomMediaLoaded = false;
+  let mediaType: "video" | "audio" | "none" = "none";
+  let audioContext: AudioContext | null = null;
+  let audioAnalyser: AnalyserNode | null = null;
+  let audioDataArray: Uint8Array | null = null;
 
   // DOM Elements
-  const tabBtns = document.querySelectorAll<HTMLButtonElement>('.studio-tab-btn');
+  const tabBtns = document.querySelectorAll<HTMLButtonElement>(".studio-tab-btn");
   const panels = {
-    audio: document.getElementById('panel-audio'),
-    script: document.getElementById('panel-script'),
-    editor: document.getElementById('panel-editor'),
+    audio: document.getElementById("panel-audio"),
+    script: document.getElementById("panel-script"),
+    editor: document.getElementById("panel-editor"),
   };
 
-  // Motion Canvas setup (background video simulation)
-  const canvas = document.getElementById('motion-canvas') as HTMLCanvasElement;
-  const ctx = canvas?.getContext('2d');
-  const subtitleRenderedText = document.getElementById('subtitle-rendered-text');
-  const playBtn = document.getElementById('video-play-btn');
-  const miniPlayBtn = document.getElementById('mini-play-btn');
-  const playIcon = document.getElementById('play-icon');
-  const seekbar = document.getElementById('video-seekbar') as HTMLInputElement;
-  const timeDisplay = document.getElementById('time-display');
-  const cuesContainer = document.getElementById('cues-container');
-  const cueCountBadge = document.getElementById('cue-count-badge');
+  const canvas = document.getElementById("motion-canvas") as HTMLCanvasElement;
+  const ctx = canvas?.getContext("2d");
+  const userVideoEl = document.getElementById("user-video") as HTMLVideoElement;
+  const userAudioEl = document.getElementById("user-audio") as HTMLAudioElement;
+  const subtitleRenderedText = document.getElementById("subtitle-rendered-text");
+  const subtitleOverlayBox = document.getElementById("subtitle-overlay-box");
+  const playBtn = document.getElementById("video-play-btn");
+  const miniPlayBtn = document.getElementById("mini-play-btn");
+  const playIcon = document.getElementById("play-icon");
+  const seekbar = document.getElementById("video-seekbar") as HTMLInputElement;
+  const timeDisplay = document.getElementById("time-display");
+  const cuesContainer = document.getElementById("cues-container");
+  const cueCountBadge = document.getElementById("cue-count-badge");
+  const audioBadge = document.getElementById("audio-badge");
+  const audioFilenameBadge = document.getElementById("audio-filename-badge");
+  const viewport = document.getElementById("video-viewport");
 
   function resizeCanvas() {
-    if (!canvas) return;
-    canvas.width = canvas.parentElement?.clientWidth || 340;
-    canvas.height = canvas.parentElement?.clientHeight || 604;
+    if (!canvas || !viewport) return;
+    canvas.width = viewport.clientWidth || 340;
+    canvas.height = viewport.clientHeight || 604;
   }
-  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
 
   // Tab Switching
-  function switchTab(target: 'audio' | 'script' | 'editor') {
-    tabBtns.forEach(btn => {
+  function switchTab(target: "audio" | "script" | "editor") {
+    tabBtns.forEach((btn) => {
       const isTarget = btn.id === `tab-btn-${target}`;
-      btn.setAttribute('aria-selected', String(isTarget));
-      btn.classList.toggle('border-[var(--color-ink)]', isTarget);
-      btn.classList.toggle('text-[var(--color-ink)]', isTarget);
-      btn.classList.toggle('font-semibold', isTarget);
-      btn.classList.toggle('border-transparent', !isTarget);
-      btn.classList.toggle('text-[var(--color-mute)]', !isTarget);
-      btn.classList.toggle('font-medium', !isTarget);
+      btn.setAttribute("aria-selected", String(isTarget));
+      btn.classList.toggle("border-[var(--color-ink)]", isTarget);
+      btn.classList.toggle("text-[var(--color-ink)]", isTarget);
+      btn.classList.toggle("font-semibold", isTarget);
+      btn.classList.toggle("border-transparent", !isTarget);
+      btn.classList.toggle("text-[var(--color-mute)]", !isTarget);
+      btn.classList.toggle("font-medium", !isTarget);
     });
 
     Object.entries(panels).forEach(([key, panel]) => {
-      panel?.classList.toggle('hidden', key !== target);
+      panel?.classList.toggle("hidden", key !== target);
     });
 
-    if (target === 'editor') {
-      setTimeout(resizeCanvas, 50);
+    if (target === "editor") {
+      setTimeout(resizeCanvas, 60);
     }
   }
 
-  document.getElementById('tab-btn-audio')?.addEventListener('click', () => switchTab('audio'));
-  document.getElementById('tab-btn-script')?.addEventListener('click', () => switchTab('script'));
-  document.getElementById('tab-btn-editor')?.addEventListener('click', () => switchTab('editor'));
+  document.getElementById("tab-btn-audio")?.addEventListener("click", () => switchTab("audio"));
+  document.getElementById("tab-btn-script")?.addEventListener("click", () => switchTab("script"));
+  document.getElementById("tab-btn-editor")?.addEventListener("click", () => switchTab("editor"));
 
-  // Render Canvas animated particles / dynamic background
+  // Canvas Dynamic Background & Audio Visualizer
   function drawCanvasFrame(time: number) {
     if (!ctx || !canvas) return;
     const w = canvas.width;
     const h = canvas.height;
 
-    // Dark gradient background
+    // Dark sleek gradient background
     const grad = ctx.createRadialGradient(
-      w * 0.5 + Math.sin(time * 0.002) * w * 0.3,
-      h * 0.4 + Math.cos(time * 0.002) * h * 0.2,
+      w * 0.5 + Math.sin(time * 0.0015) * w * 0.25,
+      h * 0.4 + Math.cos(time * 0.0015) * h * 0.2,
       20,
       w * 0.5,
       h * 0.5,
       w * 0.8
     );
-    grad.addColorStop(0, '#1e1b4b'); // Deep indigo
-    grad.addColorStop(0.5, '#0f172a'); // Slate
-    grad.addColorStop(1, '#020617'); // Black
+    grad.addColorStop(0, "#1e1b4b");
+    grad.addColorStop(0.5, "#090d16");
+    grad.addColorStop(1, "#020408");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // Floating glowing orbs
+    // Glowing Ambient Orbs
     const numOrbs = 3;
     for (let i = 0; i < numOrbs; i++) {
-      const angle = (time * 0.001) + (i * (Math.PI * 2 / numOrbs));
-      const ox = w * 0.5 + Math.cos(angle) * (w * 0.28);
-      const oy = h * 0.5 + Math.sin(angle * 1.3) * (h * 0.25);
-      const rad = 60 + i * 20;
+      const angle = time * 0.0008 + i * ((Math.PI * 2) / numOrbs);
+      const ox = w * 0.5 + Math.cos(angle) * (w * 0.3);
+      const oy = h * 0.5 + Math.sin(angle * 1.2) * (h * 0.25);
+      const rad = 70 + i * 25;
 
       const orbGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, rad);
       if (i === 0) {
-        orbGrad.addColorStop(0, 'rgba(0, 223, 216, 0.35)');
-        orbGrad.addColorStop(1, 'rgba(0, 223, 216, 0)');
+        orbGrad.addColorStop(0, "rgba(0, 223, 216, 0.25)");
+        orbGrad.addColorStop(1, "rgba(0, 223, 216, 0)");
       } else if (i === 1) {
-        orbGrad.addColorStop(0, 'rgba(255, 0, 128, 0.3)');
-        orbGrad.addColorStop(1, 'rgba(255, 0, 128, 0)');
+        orbGrad.addColorStop(0, "rgba(255, 0, 128, 0.22)");
+        orbGrad.addColorStop(1, "rgba(255, 0, 128, 0)");
       } else {
-        orbGrad.addColorStop(0, 'rgba(121, 40, 202, 0.35)');
-        orbGrad.addColorStop(1, 'rgba(121, 40, 202, 0)');
+        orbGrad.addColorStop(0, "rgba(121, 40, 202, 0.25)");
+        orbGrad.addColorStop(1, "rgba(121, 40, 202, 0)");
       }
       ctx.fillStyle = orbGrad;
       ctx.beginPath();
@@ -575,82 +921,130 @@ const stylePresets = [
       ctx.fill();
     }
 
-    // Grid lines for cinematic tech feel
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += 40) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
-    }
-    for (let y = 0; y < h; y += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
+    // Audio Frequency Visualizer (if audio file loaded)
+    if (mediaType === "audio" && audioAnalyser && audioDataArray) {
+      audioAnalyser.getByteFrequencyData(audioDataArray);
+      const bars = 24;
+      const barWidth = w / (bars * 1.6);
+      const startX = (w - bars * barWidth * 1.4) / 2;
+      const centerY = h * 0.5;
+
+      for (let b = 0; b < bars; b++) {
+        const val = audioDataArray[b * 2] || 10;
+        const barHeight = Math.max(6, (val / 255) * (h * 0.35));
+        const bx = startX + b * (barWidth * 1.4);
+
+        const barGrad = ctx.createLinearGradient(0, centerY - barHeight / 2, 0, centerY + barHeight / 2);
+        barGrad.addColorStop(0, "#38bdf8");
+        barGrad.addColorStop(0.5, "#facc15");
+        barGrad.addColorStop(1, "#ec4899");
+
+        ctx.fillStyle = barGrad;
+        ctx.beginPath();
+        ctx.roundRect(bx, centerY - barHeight / 2, barWidth, barHeight, 4);
+        ctx.fill();
+      }
     }
   }
 
-  // Active Subtitle Word Rendering
+  // Active Subtitle Word Rendering Cache (prevents DOM thrashing)
+  let lastRenderedCueId = "";
+  let lastActiveWordIdx = -1;
+
   function updateSubtitleOverlay() {
     if (!subtitleRenderedText) return;
 
     // Find current active cue
-    const activeCue = currentCues.find(c => currentTime >= c.start && currentTime <= c.end);
+    const activeCue = currentCues.find(
+      (c) => currentTime >= c.start && currentTime <= c.end
+    );
 
     if (!activeCue) {
-      subtitleRenderedText.innerHTML = `<span class="opacity-30">...</span>`;
+      if (lastRenderedCueId !== "__none__") {
+        subtitleRenderedText.innerHTML = `<span class="opacity-30">...</span>`;
+        lastRenderedCueId = "__none__";
+        lastActiveWordIdx = -1;
+      }
       return;
     }
 
-    // Calculate which word inside cue is active based on cue progress
+    // Calculate active word index
     const words = activeCue.text.trim().split(/\s+/);
-    const cueDuration = activeCue.end - activeCue.start;
-    const progressInCue = Math.max(0, Math.min(1, (currentTime - activeCue.start) / cueDuration));
-    const activeWordIndex = Math.min(words.length - 1, Math.floor(progressInCue * words.length));
+    const cueDuration = Math.max(0.1, activeCue.end - activeCue.start);
+    const progressInCue = Math.max(
+      0,
+      Math.min(1, (currentTime - activeCue.start) / cueDuration)
+    );
+    const activeWordIndex = Math.min(
+      words.length - 1,
+      Math.floor(progressInCue * words.length)
+    );
 
-    // Render words with active highlighted word
-    subtitleRenderedText.innerHTML = words.map((w, idx) => {
-      const isActive = idx === activeWordIndex;
-      return `<span class="${isActive ? 'word-active' : ''} inline-block mx-1 transition-transform duration-100">${w}</span>`;
-    }).join('');
+    if (lastRenderedCueId !== activeCue.id || lastActiveWordIdx !== activeWordIndex) {
+      lastRenderedCueId = activeCue.id;
+      lastActiveWordIdx = activeWordIndex;
+
+      subtitleRenderedText.innerHTML = words
+        .map((w, idx) => {
+          const isActive = idx === activeWordIndex;
+          return `<span class="${isActive ? "word-active" : ""} inline-block mx-1 transition-transform duration-100">${w}</span>`;
+        })
+        .join("");
+    }
   }
 
-  // Helper to seek player and sync custom video
+  function formatTime(sec: number): string {
+    const s = Math.max(0, Math.floor(sec));
+    const m = Math.floor(s / 60);
+    const remS = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(remS).padStart(2, "0")}`;
+  }
+
+  function updateTimeUI() {
+    if (seekbar) {
+      seekbar.value = String(duration > 0 ? (currentTime / duration) * 100 : 0);
+    }
+    if (timeDisplay) {
+      timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+    }
+  }
+
   function seekTo(time: number) {
     currentTime = Math.max(0, Math.min(duration, time));
-    const userVideoEl = document.getElementById('user-video') as HTMLVideoElement;
-    if (userVideoEl && !userVideoEl.classList.contains('hidden') && userVideoEl.src) {
+    if (mediaType === "video" && userVideoEl && userVideoEl.src) {
       userVideoEl.currentTime = currentTime;
+    } else if (mediaType === "audio" && userAudioEl && userAudioEl.src) {
+      userAudioEl.currentTime = currentTime;
     }
     updateTimeUI();
     updateSubtitleOverlay();
   }
 
-  // Animation & Playback Loop
+  seekbar?.addEventListener("input", () => {
+    seekTo((Number(seekbar.value) / 100) * duration);
+  });
+
+  // Animation Loop
   function tick(timestamp: number) {
     if (!lastTimestamp) lastTimestamp = timestamp;
     const delta = (timestamp - lastTimestamp) / 1000;
     lastTimestamp = timestamp;
 
-    const userVideoEl = document.getElementById('user-video') as HTMLVideoElement;
-    const hasCustomVideo = userVideoEl && !userVideoEl.classList.contains('hidden') && userVideoEl.src;
-
     if (isPlaying) {
-      if (hasCustomVideo && !userVideoEl.paused) {
+      if (mediaType === "video" && userVideoEl && !userVideoEl.paused) {
         currentTime = userVideoEl.currentTime;
-      } else {
+      } else if (mediaType === "audio" && userAudioEl && !userAudioEl.paused) {
+        currentTime = userAudioEl.currentTime;
+      } else if (mediaType === "none") {
         currentTime += delta;
         if (currentTime >= duration) {
           currentTime = 0;
-          if (hasCustomVideo) userVideoEl.currentTime = 0;
         }
       }
       updateTimeUI();
     }
 
-    if (!hasCustomVideo) {
+    if (mediaType !== "video") {
       drawCanvasFrame(timestamp);
     }
     updateSubtitleOverlay();
@@ -658,393 +1052,590 @@ const stylePresets = [
     animFrameId = requestAnimationFrame(tick);
   }
 
-  function togglePlay() {
-    isPlaying = !isPlaying;
-    if (playIcon) playIcon.textContent = isPlaying ? '❚❚' : '▶';
-    if (miniPlayBtn) miniPlayBtn.textContent = isPlaying ? '❚❚' : '▶';
+  function setPlayingState(playing: boolean) {
+    isPlaying = playing;
+    if (playIcon) playIcon.textContent = isPlaying ? "❚❚" : "▶";
+    if (miniPlayBtn) miniPlayBtn.textContent = isPlaying ? "❚❚" : "▶";
+  }
 
-    const userVideoEl = document.getElementById('user-video') as HTMLVideoElement;
-    if (userVideoEl && !userVideoEl.classList.contains('hidden') && userVideoEl.src) {
-      if (isPlaying) {
-        userVideoEl.play().catch(() => {});
+  function togglePlay() {
+    if (mediaType === "video" && userVideoEl && userVideoEl.src) {
+      if (userVideoEl.paused) {
+        userVideoEl.play().then(() => setPlayingState(true)).catch(() => {});
       } else {
         userVideoEl.pause();
+        setPlayingState(false);
       }
+    } else if (mediaType === "audio" && userAudioEl && userAudioEl.src) {
+      if (userAudioEl.paused) {
+        if (audioContext && audioContext.state === "suspended") {
+          audioContext.resume();
+        }
+        userAudioEl.play().then(() => setPlayingState(true)).catch(() => {});
+      } else {
+        userAudioEl.pause();
+        setPlayingState(false);
+      }
+    } else {
+      setPlayingState(!isPlaying);
     }
   }
 
-  playBtn?.addEventListener('click', togglePlay);
-  miniPlayBtn?.addEventListener('click', togglePlay);
+  playBtn?.addEventListener("click", togglePlay);
+  miniPlayBtn?.addEventListener("click", togglePlay);
 
-  function formatTime(sec: number): string {
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  }
-
-  function updateTimeUI() {
-    if (seekbar) seekbar.value = String(duration > 0 ? (currentTime / duration) * 100 : 0);
-    if (timeDisplay) timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-  }
-
-  seekbar?.addEventListener('input', () => {
-    seekTo((Number(seekbar.value) / 100) * duration);
+  // Keyboard shortcut: Spacebar to Play/Pause
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && e.target === document.body) {
+      e.preventDefault();
+      togglePlay();
+    }
   });
 
-  // Render Timeline Cues
-  function renderCuesTable() {
-    if (!cuesContainer) return;
-    cuesContainer.innerHTML = '';
+  // Media Player Events
+  userVideoEl?.addEventListener("play", () => setPlayingState(true));
+  userVideoEl?.addEventListener("pause", () => setPlayingState(false));
+  userVideoEl?.addEventListener("ended", () => {
+    setPlayingState(false);
+    currentTime = 0;
+    userVideoEl.currentTime = 0;
+    updateTimeUI();
+  });
+  userVideoEl?.addEventListener("timeupdate", () => {
+    currentTime = userVideoEl.currentTime;
+    updateTimeUI();
+  });
 
-    currentCues.forEach((cue, index) => {
-      const row = document.createElement('div');
-      row.className = 'flex items-center gap-3 p-3 text-xs hover:bg-[var(--color-canvas-soft)] transition-colors group';
-      row.dataset.cueId = cue.id;
-      row.innerHTML = `
-        <button class="cue-jump-btn shrink-0 w-6 h-6 rounded bg-[var(--color-canvas-soft-2)] hover:bg-[var(--color-ink)] hover:text-[var(--color-on-primary)] font-mono font-bold text-[11px] flex items-center justify-center transition-colors" title="Jump to timestamp">
-          ${index + 1}
-        </button>
-        <input
-          type="number"
-          step="0.1"
-          class="cue-start-input w-16 px-2 py-1 rounded border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] font-mono text-center focus:ring-1 focus:ring-[var(--color-link)] focus:outline-none"
-          value="${cue.start.toFixed(1)}"
-          aria-label="Start time in seconds"
-        />
-        <span class="text-[var(--color-mute)]">→</span>
-        <input
-          type="number"
-          step="0.1"
-          class="cue-end-input w-16 px-2 py-1 rounded border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] font-mono text-center focus:ring-1 focus:ring-[var(--color-link)] focus:outline-none"
-          value="${cue.end.toFixed(1)}"
-          aria-label="End time in seconds"
-        />
-        <input
-          type="text"
-          class="cue-text-input flex-1 px-3 py-1 rounded border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] font-medium focus:ring-1 focus:ring-[var(--color-link)] focus:outline-none"
-          value="${cue.text}"
-          aria-label="Subtitle cue text"
-        />
-        <button class="cue-delete-btn text-[var(--color-mute)] hover:text-[var(--color-error)] px-2 py-1 rounded text-sm transition-colors" title="Delete line">
-          ✕
-        </button>
-      `;
+  userAudioEl?.addEventListener("play", () => setPlayingState(true));
+  userAudioEl?.addEventListener("pause", () => setPlayingState(false));
+  userAudioEl?.addEventListener("ended", () => {
+    setPlayingState(false);
+    currentTime = 0;
+    userAudioEl.currentTime = 0;
+    updateTimeUI();
+  });
+  userAudioEl?.addEventListener("timeupdate", () => {
+    currentTime = userAudioEl.currentTime;
+    updateTimeUI();
+  });
 
-      // Event listeners for cue row
-      row.querySelector('.cue-jump-btn')?.addEventListener('click', () => {
-        seekTo(cue.start);
+  // Speed Buttons
+  document.querySelectorAll<HTMLButtonElement>(".speed-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const spd = Number(btn.dataset.speed || 1);
+      if (userVideoEl) userVideoEl.playbackRate = spd;
+      if (userAudioEl) userAudioEl.playbackRate = spd;
+      document.querySelectorAll<HTMLButtonElement>(".speed-btn").forEach((b) => {
+        const isMatch = b.dataset.speed === btn.dataset.speed;
+        b.classList.toggle("bg-[var(--color-ink)]", isMatch);
+        b.classList.toggle("text-[var(--color-on-primary)]", isMatch);
+        b.classList.toggle("text-[var(--color-body)]", !isMatch);
       });
+    });
+  });
 
-      row.querySelector('.cue-start-input')?.addEventListener('change', (e) => {
-        cue.start = Number((e.target as HTMLInputElement).value);
-      });
+  // Volume Slider & Mute
+  const volumeSlider = document.getElementById("volume-slider") as HTMLInputElement;
+  const muteBtn = document.getElementById("mute-toggle-btn");
+  volumeSlider?.addEventListener("input", () => {
+    const vol = Number(volumeSlider.value);
+    if (userVideoEl) userVideoEl.volume = vol;
+    if (userAudioEl) userAudioEl.volume = vol;
+    if (muteBtn) muteBtn.textContent = vol === 0 ? "🔇" : "🔊";
+  });
 
-      row.querySelector('.cue-end-input')?.addEventListener('change', (e) => {
-        cue.end = Number((e.target as HTMLInputElement).value);
-      });
+  muteBtn?.addEventListener("click", () => {
+    const isMuted = userVideoEl.muted || userAudioEl.muted;
+    if (userVideoEl) userVideoEl.muted = !isMuted;
+    if (userAudioEl) userAudioEl.muted = !isMuted;
+    if (muteBtn) muteBtn.textContent = isMuted ? "🔊" : "🔇";
+  });
 
-      row.querySelector('.cue-text-input')?.addEventListener('input', (e) => {
-        cue.text = (e.target as HTMLInputElement).value;
-        updateSubtitleOverlay();
-      });
-
-      row.querySelector('.cue-delete-btn')?.addEventListener('click', () => {
-        currentCues = currentCues.filter(c => c.id !== cue.id);
-        renderCuesTable();
-        updateSubtitleOverlay();
-      });
-
-      cuesContainer.appendChild(row);
+  // Aspect Ratio Switcher
+  const aspectBtns = document.querySelectorAll<HTMLButtonElement>(".aspect-btn");
+  function setAspectRatio(ratio: string) {
+    aspectBtns.forEach((b) => {
+      const isMatch = b.dataset.ratio === ratio;
+      b.classList.toggle("bg-[var(--color-canvas)]", isMatch);
+      b.classList.toggle("text-[var(--color-ink)]", isMatch);
+      b.classList.toggle("shadow-l1", isMatch);
+      b.classList.toggle("text-[var(--color-mute)]", !isMatch);
     });
 
-    if (cueCountBadge) cueCountBadge.textContent = `${currentCues.length} cues`;
-    if (currentCues.length > 0) {
-      duration = Math.max(10, Math.ceil(currentCues[currentCues.length - 1].end + 1));
-      updateTimeUI();
+    if (viewport) {
+      if (ratio === "16-9") {
+        viewport.style.maxWidth = "520px";
+        viewport.style.aspectRatio = "16 / 9";
+      } else if (ratio === "1-1") {
+        viewport.style.maxWidth = "380px";
+        viewport.style.aspectRatio = "1 / 1";
+      } else {
+        viewport.style.maxWidth = "340px";
+        viewport.style.aspectRatio = "9 / 16";
+      }
     }
+    setTimeout(resizeCanvas, 60);
   }
 
-  // Add Cue Button
-  document.getElementById('add-cue-btn')?.addEventListener('click', () => {
-    const lastEnd = currentCues.length > 0 ? currentCues[currentCues.length - 1].end : 0;
-    currentCues.push({
-      id: String(Date.now()),
-      start: Number((lastEnd + 0.2).toFixed(1)),
-      end: Number((lastEnd + 2.5).toFixed(1)),
-      text: "NEW SUBTITLE LINE"
+  aspectBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const ratio = btn.dataset.ratio || "9-16";
+      setAspectRatio(ratio);
     });
-    renderCuesTable();
   });
 
   // Style Preset Switcher
-  const styleBtns = document.querySelectorAll<HTMLButtonElement>('.style-preset-btn');
-  styleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const styleId = btn.dataset.style || 'hormozi';
+  const styleBtns = document.querySelectorAll<HTMLButtonElement>(".style-preset-btn");
+  styleBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const styleId = btn.dataset.style || "hormozi";
       currentStyle = styleId;
 
-      styleBtns.forEach(b => {
+      styleBtns.forEach((b) => {
         const isMatch = b.dataset.style === styleId;
-        b.classList.toggle('border-[var(--color-link)]', isMatch);
-        b.classList.toggle('bg-[var(--color-link-bg-soft)]', isMatch);
-        b.classList.toggle('ring-2', isMatch);
-        b.classList.toggle('ring-[var(--color-link)]/20', isMatch);
-        b.classList.toggle('border-[var(--color-hairline)]', !isMatch);
-        b.classList.toggle('bg-[var(--color-canvas-soft)]', !isMatch);
+        b.classList.toggle("border-[var(--color-link)]", isMatch);
+        b.classList.toggle("bg-[var(--color-link-bg-soft)]", isMatch);
+        b.classList.toggle("ring-2", isMatch);
+        b.classList.toggle("ring-[var(--color-link)]/20", isMatch);
+        b.classList.toggle("border-[var(--color-hairline)]", !isMatch);
+        b.classList.toggle("bg-[var(--color-canvas-soft)]", !isMatch);
       });
 
       if (subtitleRenderedText) {
-        subtitleRenderedText.className = `sub-style-${styleId} text-2xl font-bold tracking-tight text-center max-w-full px-2 py-1 leading-snug transition-transform`;
+        subtitleRenderedText.className = `sub-style-${styleId} text-2xl font-bold tracking-tight text-center max-w-full px-3 py-1.5 leading-snug transition-transform`;
       }
+      lastRenderedCueId = "";
       updateSubtitleOverlay();
     });
   });
 
-  // Aspect Ratio Switcher
-  const aspectBtns = document.querySelectorAll<HTMLButtonElement>('.aspect-btn');
-  const viewport = document.getElementById('video-viewport');
-  aspectBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const ratio = btn.dataset.ratio;
-      aspectBtns.forEach(b => {
-        const isMatch = b.dataset.ratio === ratio;
-        b.classList.toggle('bg-[var(--color-canvas)]', isMatch);
-        b.classList.toggle('text-[var(--color-ink)]', isMatch);
-        b.classList.toggle('shadow-l1', isMatch);
-        b.classList.toggle('text-[var(--color-mute)]', !isMatch);
+  // Word Highlight Color Palette
+  document.querySelectorAll<HTMLButtonElement>(".color-dot-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeColor = btn.dataset.color || "#facc15";
+      document.documentElement.style.setProperty("--sub-active-color", activeColor);
+      document.querySelectorAll<HTMLButtonElement>(".color-dot-btn").forEach((b) => {
+        const isMatch = b.dataset.color === activeColor;
+        b.classList.toggle("ring-2", isMatch);
+        b.classList.toggle("ring-offset-2", isMatch);
+        b.classList.toggle("ring-[var(--color-ink)]", isMatch);
+        b.classList.toggle("scale-110", isMatch);
       });
-
-      if (viewport) {
-        if (ratio === '16-9') {
-          viewport.style.maxWidth = '520px';
-          viewport.style.aspectRatio = '16 / 9';
-        } else if (ratio === '1-1') {
-          viewport.style.maxWidth = '380px';
-          viewport.style.aspectRatio = '1 / 1';
-        } else {
-          viewport.style.maxWidth = '340px';
-          viewport.style.aspectRatio = '9 / 16';
-        }
-      }
-      setTimeout(resizeCanvas, 50);
+      lastRenderedCueId = "";
+      updateSubtitleOverlay();
     });
   });
 
-  // Position Buttons
-  const posBtns = document.querySelectorAll<HTMLButtonElement>('.pos-btn');
-  const overlayBox = document.getElementById('subtitle-overlay-box');
-  posBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const pos = btn.dataset.pos;
-      posBtns.forEach(b => {
-        const isMatch = b.dataset.pos === pos;
-        b.classList.toggle('bg-[var(--color-ink)]', isMatch);
-        b.classList.toggle('text-[var(--color-on-primary)]', isMatch);
-        b.classList.toggle('border-[var(--color-link)]', isMatch);
-        b.classList.toggle('text-[var(--color-body)]', !isMatch);
-        b.classList.toggle('border-[var(--color-hairline)]', !isMatch);
-      });
+  // Text Case Switcher
+  const upperCaseBtn = document.getElementById("case-upper-btn");
+  const titleCaseBtn = document.getElementById("case-title-btn");
 
-      if (overlayBox) {
-        overlayBox.classList.remove('bottom-[15%]', 'top-[15%]', 'bottom-[45%]');
-        if (pos === 'top') overlayBox.classList.add('top-[15%]');
-        else if (pos === 'center') overlayBox.classList.add('bottom-[45%]');
-        else overlayBox.classList.add('bottom-[15%]');
+  function toTitleCase(str: string) {
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+  }
+
+  upperCaseBtn?.addEventListener("click", () => {
+    currentCues.forEach((c) => (c.text = c.text.toUpperCase()));
+    upperCaseBtn.className = "px-2 py-1 rounded font-bold bg-[var(--color-ink)] text-[var(--color-on-primary)] cursor-pointer";
+    titleCaseBtn!.className = "px-2 py-1 rounded text-[var(--color-body)] hover:text-[var(--color-ink)] cursor-pointer";
+    renderCuesTable();
+    lastRenderedCueId = "";
+    updateSubtitleOverlay();
+  });
+
+  titleCaseBtn?.addEventListener("click", () => {
+    currentCues.forEach((c) => (c.text = toTitleCase(c.text)));
+    titleCaseBtn.className = "px-2 py-1 rounded font-bold bg-[var(--color-ink)] text-[var(--color-on-primary)] cursor-pointer";
+    upperCaseBtn!.className = "px-2 py-1 rounded text-[var(--color-body)] hover:text-[var(--color-ink)] cursor-pointer";
+    renderCuesTable();
+    lastRenderedCueId = "";
+    updateSubtitleOverlay();
+  });
+
+  // Auto Emojis Injector
+  const viralEmojis = ["🔥", "🚀", "⚡", "💡", "💰", "🎯", "👏", "🎬", "✨", "💥"];
+  document.getElementById("inject-emojis-btn")?.addEventListener("click", () => {
+    currentCues.forEach((cue, i) => {
+      // Avoid adding multiple emojis
+      if (!/[\u{1F300}-\u{1F9FF}]/u.test(cue.text)) {
+        const emoji = viralEmojis[i % viralEmojis.length];
+        cue.text = `${cue.text} ${emoji}`;
       }
+    });
+    renderCuesTable();
+    lastRenderedCueId = "";
+    updateSubtitleOverlay();
+  });
+
+  // Position Controls & Slider
+  const posSlider = document.getElementById("pos-slider") as HTMLInputElement;
+  const posPercentLabel = document.getElementById("pos-percent-label");
+  function setPosition(val: number) {
+    if (subtitleOverlayBox) {
+      subtitleOverlayBox.style.bottom = `${val}%`;
+    }
+    if (posSlider) posSlider.value = String(val);
+    if (posPercentLabel) {
+      const name = val > 65 ? "Top" : val > 35 ? "Center" : "Bottom";
+      posPercentLabel.textContent = `${name} (${val}%)`;
+    }
+  }
+
+  posSlider?.addEventListener("input", () => {
+    setPosition(Number(posSlider.value));
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".pos-preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const posVal = Number(btn.dataset.pos || 18);
+      setPosition(posVal);
+      document.querySelectorAll<HTMLButtonElement>(".pos-preset-btn").forEach((b) => {
+        const isMatch = b.dataset.pos === btn.dataset.pos;
+        b.classList.toggle("border-[var(--color-link)]", isMatch);
+        b.classList.toggle("bg-[var(--color-ink)]", isMatch);
+        b.classList.toggle("text-[var(--color-on-primary)]", isMatch);
+        b.classList.toggle("border-[var(--color-hairline)]", !isMatch);
+        b.classList.toggle("text-[var(--color-body)]", !isMatch);
+      });
     });
   });
 
   // Font Size Slider
-  const fontSlider = document.getElementById('fontsize-slider') as HTMLInputElement;
-  const fontLabel = document.getElementById('fontsize-label');
-  fontSlider?.addEventListener('input', () => {
+  const fontSlider = document.getElementById("fontsize-slider") as HTMLInputElement;
+  const fontLabel = document.getElementById("fontsize-label");
+  fontSlider?.addEventListener("input", () => {
     const sz = fontSlider.value;
     if (fontLabel) fontLabel.textContent = `${sz}px`;
     if (subtitleRenderedText) subtitleRenderedText.style.fontSize = `${sz}px`;
   });
 
-  // ─── AI Whisper Speech Transcription Engine (Client-Side) ───────
-  let whisperPipeline: any = null;
+  // ─── Universal Media Loader (Video & Audio) ─────────────────
+  const mediaFileInput = document.getElementById("media-file-input") as HTMLInputElement;
+  const customMediaInput = document.getElementById("custom-media-input") as HTMLInputElement;
+  const dropzone = document.getElementById("audio-dropzone");
+  const loadingOverlay = document.getElementById("transcribe-loading");
+  const statusText = document.getElementById("transcribe-status-text");
+  const progressBar = document.getElementById("transcribe-progress-bar");
+  const detailText = document.getElementById("transcribe-detail-text");
+  const uploadMediaBtnText = document.getElementById("upload-media-btn-text");
 
-  async function getTranscriber(onProgress: (status: string, pct: number) => void) {
-    if (whisperPipeline) return whisperPipeline;
-
-    onProgress('Loading AI Whisper Model...', 20);
-    // Dynamic load of Transformers.js from CDN
-    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-    env.allowLocalModels = false;
-    env.useBrowserCache = true;
-
-    whisperPipeline = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', {
-      quantized: true,
-      progress_callback: (p: any) => {
-        if (p.status === 'progress' && p.total) {
-          const pct = Math.round(20 + (p.loaded / p.total) * 60);
-          onProgress(`Downloading AI Model (${Math.round((p.loaded / p.total) * 100)}%)...`, pct);
-        } else if (p.status === 'ready') {
-          onProgress('AI Model ready! Transcribing speech...', 80);
-        }
-      }
-    });
-
-    return whisperPipeline;
-  }
-
-  // Audio Resampler to 16kHz Mono Float32Array
-  async function extractAudioData(file: File): Promise<{ audioData: Float32Array; duration: number }> {
-    const arrayBuffer = await file.arrayBuffer();
-    const tempCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const decodedBuffer = await tempCtx.decodeAudioData(arrayBuffer);
-    const audioDur = decodedBuffer.duration;
-
-    const targetSampleRate = 16000;
-    const offlineCtx = new OfflineAudioContext(1, Math.max(1, Math.ceil(audioDur * targetSampleRate)), targetSampleRate);
-    const source = offlineCtx.createBufferSource();
-    source.buffer = decodedBuffer;
-    source.connect(offlineCtx.destination);
-    source.start(0);
-    const resampledBuffer = await offlineCtx.startRendering();
-    tempCtx.close();
-
-    return {
-      audioData: resampledBuffer.getChannelData(0),
-      duration: audioDur
-    };
-  }
-
-  // Audio / Video Upload Handler with Real Whisper AI
-  const fileInput = document.getElementById('media-file-input') as HTMLInputElement;
-  const loadingOverlay = document.getElementById('transcribe-loading');
-  const statusText = document.getElementById('transcribe-status-text');
-  const progressBar = document.getElementById('transcribe-progress-bar');
-  const detailText = document.getElementById('transcribe-detail-text');
-
-  function updateTranscribeProgress(msg: string, pct: number, detail?: string) {
+  function updateProgress(msg: string, pct: number, detail?: string) {
     if (statusText) statusText.textContent = msg;
     if (progressBar) progressBar.style.width = `${pct}%`;
     if (detail && detailText) detailText.textContent = detail;
   }
 
-  fileInput?.addEventListener('change', () => {
-    const file = fileInput.files?.[0];
-    if (file) handleMediaFile(file);
+  // Drag & drop
+  dropzone?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("border-[var(--color-link)]", "bg-[var(--color-link-bg-soft)]/60");
   });
 
-  async function handleMediaFile(file: File) {
-    loadingOverlay?.classList.remove('hidden');
-    updateTranscribeProgress('Decoding audio track from media...', 10, file.name);
+  dropzone?.addEventListener("dragleave", () => {
+    dropzone.classList.remove("border-[var(--color-link)]", "bg-[var(--color-link-bg-soft)]/60");
+  });
 
-    // Set video element source immediately if video file
-    const fileUrl = URL.createObjectURL(file);
-    const userVideoEl = document.getElementById('user-video') as HTMLVideoElement;
-    const motionCanvas = document.getElementById('motion-canvas');
+  dropzone?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("border-[var(--color-link)]", "bg-[var(--color-link-bg-soft)]/60");
+    const file = e.dataTransfer?.files[0];
+    if (file) handleLoadedMedia(file);
+  });
 
-    if (file.type.startsWith('video/')) {
-      if (userVideoEl && motionCanvas) {
-        userVideoEl.src = fileUrl;
-        userVideoEl.classList.remove('hidden');
-        motionCanvas.classList.add('hidden');
-      }
-    }
+  mediaFileInput?.addEventListener("change", () => {
+    const file = mediaFileInput.files?.[0];
+    if (file) handleLoadedMedia(file);
+  });
 
+  customMediaInput?.addEventListener("change", () => {
+    const file = customMediaInput.files?.[0];
+    if (file) handleLoadedMedia(file);
+  });
+
+  // ─── AI Speech-to-Text & Audio Extraction Engine ────────────
+  let whisperPipeline: any = null;
+
+  async function getWhisperPipeline(onProgress?: (progress: number, text: string) => void) {
+    if (whisperPipeline) return whisperPipeline;
     try {
-      const { audioData, duration: totalDuration } = await extractAudioData(file);
-      duration = Math.max(5, Math.ceil(totalDuration));
-      updateTimeUI();
-
-      updateTranscribeProgress('Initializing AI Speech Recognition...', 25, 'Loading quantized Whisper model');
-      const transcriber = await getTranscriber((msg, pct) => {
-        updateTranscribeProgress(msg, pct, 'Running neural acoustic model locally');
+      onProgress?.(30, "Initializing Whisper AI model in browser...");
+      const { pipeline, env } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3");
+      env.allowLocalModels = false;
+      
+      whisperPipeline = await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny", {
+        device: ("gpu" in navigator ? "webgpu" : "wasm") as any,
+        progress_callback: (p: any) => {
+          if (p.status === "progress" && p.total) {
+            const pct = Math.round(30 + ((p.loaded || 0) / p.total) * 35);
+            onProgress?.(pct, `Loading AI Model: ${p.file || "weights"} (${Math.round(p.progress || 0)}%)`);
+          }
+        },
       });
-
-      updateTranscribeProgress('Transcribing speech & analyzing timestamps...', 85, 'Detecting spoken words...');
-      const result = await transcriber(audioData, {
-        chunk_length_s: 30,
-        stride_length_s: 5,
-        return_timestamps: true
-      });
-
-      updateTranscribeProgress('Generating subtitle cues...', 95, 'Syncing word timestamps');
-
-      const cues: SubtitleCue[] = [];
-      if (result && Array.isArray(result.chunks) && result.chunks.length > 0) {
-        result.chunks.forEach((chunk: any, i: number) => {
-          const text = chunk.text?.trim()?.toUpperCase();
-          if (!text) return;
-          const start = chunk.timestamp?.[0] ?? (i * 2.5);
-          const end = chunk.timestamp?.[1] ?? (start + Math.max(1.5, text.split(' ').length * 0.4));
-          cues.push({
-            id: String(i + 1),
-            start: Number(Number(start).toFixed(1)),
-            end: Number(Math.max(start + 0.5, Number(end)).toFixed(1)),
-            text: text
-          });
-        });
-      } else if (result && result.text) {
-        const fullText = result.text.trim().toUpperCase();
-        const words = fullText.split(/\s+/);
-        const chunkSize = 4;
-        const totalChunks = Math.ceil(words.length / chunkSize);
-        const secPerChunk = totalDuration / Math.max(1, totalChunks);
-        for (let c = 0; c < totalChunks; c++) {
-          const chunkWords = words.slice(c * chunkSize, (c + 1) * chunkSize);
-          const cStart = Number((c * secPerChunk).toFixed(1));
-          const cEnd = Number(Math.min(totalDuration, cStart + secPerChunk - 0.1).toFixed(1));
-          cues.push({
-            id: String(c + 1),
-            start: cStart,
-            end: Math.max(cStart + 0.5, cEnd),
-            text: chunkWords.join(' ')
-          });
-        }
-      }
-
-      if (cues.length === 0) {
-        cues.push({
-          id: '1',
-          start: 0.0,
-          end: Number(Math.min(totalDuration, 4.0).toFixed(1)),
-          text: "NO SPEECH DETECTED IN AUDIO"
-        });
-      }
-
-      currentCues = cues;
-      renderCuesTable();
-      updateTranscribeProgress('Complete!', 100);
-
-      setTimeout(() => {
-        loadingOverlay?.classList.add('hidden');
-        switchTab('editor');
-      }, 400);
-
+      return whisperPipeline;
     } catch (err) {
-      console.error("Whisper transcription error:", err);
-      updateTranscribeProgress('Transcribing with audio cadence...', 90, 'Audio synchronized');
-      setTimeout(() => {
-        loadingOverlay?.classList.add('hidden');
-        const cleanName = file.name.replace(/\.[^/.]+$/, "").toUpperCase();
-        const words = cleanName.split(/[\s_-]+/).filter(Boolean);
-        const chunk1 = words.slice(0, 3).join(' ') || "TRANSCRIPTION READY";
-        const chunk2 = words.slice(3, 7).join(' ') || "EDIT YOUR SUBTITLES HERE";
-        currentCues = [
-          { id: '1', start: 0.0, end: Number((duration * 0.35).toFixed(1)), text: chunk1 },
-          { id: '2', start: Number((duration * 0.38).toFixed(1)), end: Number((duration * 0.75).toFixed(1)), text: chunk2 },
-          { id: '3', start: Number((duration * 0.78).toFixed(1)), end: Number(duration.toFixed(1)), text: "EXPORT SRT OR BURN TO VIDEO" }
-        ];
-        renderCuesTable();
-        switchTab('editor');
-      }, 800);
+      console.warn("Primary Whisper loader failed, attempting fallback...", err);
+      try {
+        const { pipeline } = await import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2");
+        whisperPipeline = await pipeline("automatic-speech-recognition", "Xenova/whisper-tiny", {
+          progress_callback: (p: any) => {
+            if (p.status === "progress" && p.total) {
+              const pct = Math.round(30 + ((p.loaded || 0) / p.total) * 35);
+              onProgress?.(pct, `Loading AI Model: ${p.file || "weights"} (${Math.round(p.progress || 0)}%)`);
+            }
+          },
+        });
+        return whisperPipeline;
+      } catch (fallbackErr) {
+        console.error("Whisper pipeline initialization error:", fallbackErr);
+        throw fallbackErr;
+      }
     }
   }
 
-  // ─── Live Microphone Speech Recognition (Deduplicated & Accurate) ───
-  const liveSpeechBtn = document.getElementById('live-speech-btn');
-  const micLabel = document.getElementById('mic-label');
-  const micPulse = document.getElementById('mic-pulse');
-  const speechLangSelect = document.getElementById('speech-lang-select') as HTMLSelectElement;
-  const liveSpeechPreviewBox = document.getElementById('live-speech-preview-box');
-  const liveSpeechPreviewText = document.getElementById('live-speech-preview-text');
-  const speechTimer = document.getElementById('speech-timer');
+  async function extractAudioData(file: File): Promise<{ audioData: Float32Array; duration: number } | null> {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const tempAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      let decodedBuffer: AudioBuffer;
+      try {
+        decodedBuffer = await tempAudioCtx.decodeAudioData(arrayBuffer);
+      } catch (e) {
+        console.warn("Direct container audio decode failed:", e);
+        return null;
+      } finally {
+        try { await tempAudioCtx.close(); } catch (_) {}
+      }
+
+      if (!decodedBuffer || decodedBuffer.length === 0) {
+        return null;
+      }
+
+      // Resample to 16,000 Hz Mono Float32Array (standard Whisper format)
+      const targetSampleRate = 16000;
+      const targetLength = Math.ceil(decodedBuffer.duration * targetSampleRate);
+      const offlineCtx = new OfflineAudioContext(1, targetLength, targetSampleRate);
+      const source = offlineCtx.createBufferSource();
+      source.buffer = decodedBuffer;
+      source.connect(offlineCtx.destination);
+      source.start(0);
+
+      const resampledBuffer = await offlineCtx.startRendering();
+      const audioData = resampledBuffer.getChannelData(0);
+
+      return { audioData, duration: decodedBuffer.duration };
+    } catch (err) {
+      console.warn("Audio extraction error:", err);
+      return null;
+    }
+  }
+
+  async function handleLoadedMedia(file: File) {
+    loadingOverlay?.classList.remove("hidden");
+    updateProgress("Analyzing media format & audio tracks...", 10, file.name);
+
+    const fileUrl = URL.createObjectURL(file);
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|m4v)$/i.test(file.name);
+    const isAudio = file.type.startsWith("audio/") || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(file.name);
+
+    if (uploadMediaBtnText) {
+      uploadMediaBtnText.textContent = file.name.length > 18 ? `${file.name.substring(0, 15)}...` : file.name;
+    }
+
+    if (isVideo) {
+      mediaType = "video";
+      isCustomMediaLoaded = true;
+      userVideoEl.src = fileUrl;
+      userVideoEl.classList.remove("hidden");
+      canvas.classList.add("hidden");
+      audioBadge?.classList.add("hidden");
+
+      if (userAudioEl) {
+        userAudioEl.pause();
+        userAudioEl.src = "";
+      }
+
+      userVideoEl.onloadedmetadata = () => {
+        duration = Math.max(3, Math.ceil(userVideoEl.duration));
+        updateTimeUI();
+
+        if (userVideoEl.videoWidth > userVideoEl.videoHeight) {
+          setAspectRatio("16-9");
+        } else if (Math.abs(userVideoEl.videoWidth - userVideoEl.videoHeight) < 20) {
+          setAspectRatio("1-1");
+        } else {
+          setAspectRatio("9-16");
+        }
+      };
+    } else if (isAudio) {
+      mediaType = "audio";
+      isCustomMediaLoaded = true;
+      userAudioEl.src = fileUrl;
+      userVideoEl.classList.add("hidden");
+      userVideoEl.src = "";
+      canvas.classList.remove("hidden");
+      audioBadge?.classList.remove("hidden");
+      if (audioFilenameBadge) audioFilenameBadge.textContent = file.name;
+
+      try {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+        const source = audioContext.createMediaElementSource(userAudioEl);
+        audioAnalyser = audioContext.createAnalyser();
+        audioAnalyser.fftSize = 64;
+        source.connect(audioAnalyser);
+        audioAnalyser.connect(audioContext.destination);
+        audioDataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
+      } catch (_) {}
+
+      userAudioEl.onloadedmetadata = () => {
+        duration = Math.max(3, Math.ceil(userAudioEl.duration));
+        updateTimeUI();
+      };
+    }
+
+    // 1. Extract audio track from media
+    updateProgress("Extracting speech audio from media...", 20, "Extracting 16kHz speech audio stream");
+    let audioResult: { audioData: Float32Array; duration: number } | null = null;
+    try {
+      audioResult = await extractAudioData(file);
+    } catch (err) {
+      console.warn("Audio extraction error:", err);
+    }
+
+    if (audioResult && audioResult.duration > 0) {
+      duration = Math.max(3, Math.ceil(audioResult.duration));
+      updateTimeUI();
+    }
+
+    let generatedCues: SubtitleCue[] = [];
+
+    // 2. Perform AI Speech Recognition (Whisper)
+    if (audioResult && audioResult.audioData && audioResult.audioData.length > 0) {
+      try {
+        updateProgress("Loading on-device AI transcription engine...", 35, "Whisper AI (Zero Server Uploads)");
+        const transcriber = await getWhisperPipeline((pct, text) => {
+          updateProgress(text, pct, "Running locally on device");
+        });
+
+        updateProgress("Transcribing spoken speech with AI...", 70, "Detecting spoken words & precise timestamps");
+
+        const selectedLangRaw = speechLangSelect?.value || "auto";
+        const transcribeOptions: any = {
+          return_timestamps: true,
+          chunk_length_s: 30,
+          stride_length_s: 5,
+          task: "transcribe",
+        };
+        if (selectedLangRaw && selectedLangRaw !== "auto") {
+          const langCode = selectedLangRaw.split("-")[0];
+          transcribeOptions.language = langCode;
+        }
+
+        const result = await transcriber(audioResult.audioData, transcribeOptions);
+
+        if (result && result.chunks && result.chunks.length > 0) {
+          let cueIndex = 1;
+          for (const chunk of result.chunks) {
+            const rawText = (chunk.text || "").trim();
+            if (!rawText) continue;
+
+            let start = chunk.timestamp?.[0];
+            let end = chunk.timestamp?.[1];
+
+            if (start === null || start === undefined) start = 0;
+            if (end === null || end === undefined) end = Math.min(duration, start + 2.5);
+
+            start = Number(Number(start).toFixed(1));
+            end = Number(Math.max(start + 0.8, Number(end)).toFixed(1));
+
+            // Break long speech segments (> 5 words) into punchy, readable subtitle lines
+            const words = rawText.split(/\s+/).filter(Boolean);
+            if (words.length <= 5) {
+              generatedCues.push({
+                id: String(cueIndex++),
+                start,
+                end,
+                text: rawText.toUpperCase(),
+              });
+            } else {
+              const chunkSize = 4;
+              const totalSubChunks = Math.ceil(words.length / chunkSize);
+              const chunkSpan = (end - start) / totalSubChunks;
+              for (let c = 0; c < totalSubChunks; c++) {
+                const subWords = words.slice(c * chunkSize, (c + 1) * chunkSize);
+                const cStart = Number((start + c * chunkSpan).toFixed(1));
+                const cEnd = Number((cStart + chunkSpan - 0.05).toFixed(1));
+                generatedCues.push({
+                  id: String(cueIndex++),
+                  start: cStart,
+                  end: Math.max(cStart + 0.6, cEnd),
+                  text: subWords.join(" ").toUpperCase(),
+                });
+              }
+            }
+          }
+        } else if (result && typeof result.text === "string" && result.text.trim()) {
+          const words = result.text.trim().split(/\s+/).filter(Boolean);
+          const chunkSize = 4;
+          const totalChunks = Math.ceil(words.length / chunkSize);
+          const dur = duration || 10;
+          const chunkDur = dur / totalChunks;
+          for (let c = 0; c < totalChunks; c++) {
+            const subWords = words.slice(c * chunkSize, (c + 1) * chunkSize);
+            const cStart = Number((c * chunkDur).toFixed(1));
+            const cEnd = Number(Math.min(dur, (c + 1) * chunkDur - 0.1).toFixed(1));
+            generatedCues.push({
+              id: String(c + 1),
+              start: cStart,
+              end: Math.max(cStart + 0.6, cEnd),
+              text: subWords.join(" ").toUpperCase(),
+            });
+          }
+        }
+      } catch (aiErr) {
+        console.error("AI Transcription error:", aiErr);
+      }
+    }
+
+    // 3. Fallback only if no speech was detected in audio / muted file
+    if (generatedCues.length === 0) {
+      updateProgress("Finalizing subtitle cues...", 85, "Ready to edit");
+      const dur = duration || 10;
+      const chunkDur = Math.min(2.5, dur / 3);
+      const count = Math.max(2, Math.floor(dur / chunkDur));
+      for (let i = 0; i < count; i++) {
+        const start = Number((i * chunkDur).toFixed(1));
+        const end = Number(Math.min(dur, (i + 1) * chunkDur - 0.1).toFixed(1));
+        generatedCues.push({
+          id: String(i + 1),
+          start,
+          end: Math.max(start + 0.6, end),
+          text: i === 0 ? "ADD YOUR SUBTITLES HERE" : `SUBTITLE LINE ${i + 1}`,
+        });
+      }
+    }
+
+    updateProgress("Complete!", 100);
+    currentCues = generatedCues;
+    renderCuesTable();
+
+    setTimeout(() => {
+      loadingOverlay?.classList.add("hidden");
+      switchTab("editor");
+      seekTo(0);
+    }, 400);
+  }
+
+  // ─── Live Microphone Speech Recognition ─────────────────────
+  const liveSpeechBtn = document.getElementById("live-speech-btn");
+  const micLabel = document.getElementById("mic-label");
+  const micPulse = document.getElementById("mic-pulse");
+  const speechLangSelect = document.getElementById("speech-lang-select") as HTMLSelectElement;
+  const liveSpeechPreviewBox = document.getElementById("live-speech-preview-box");
+  const liveSpeechPreviewText = document.getElementById("live-speech-preview-text");
+  const speechTimer = document.getElementById("speech-timer");
 
   let recognition: any = null;
   let isRecordingVoice = false;
@@ -1053,14 +1644,15 @@ const stylePresets = [
   let timerInterval: any = null;
   let lastFinalTime = 0;
 
-  const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  const SpeechRecognitionAPI =
+    (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
   function initRecognition() {
     if (!SpeechRecognitionAPI) return null;
     const rec = new SpeechRecognitionAPI();
     rec.continuous = true;
     rec.interimResults = true;
-    rec.lang = speechLangSelect?.value || 'en-US';
+    rec.lang = speechLangSelect?.value || "en-US";
 
     rec.onstart = () => {
       isRecordingVoice = true;
@@ -1068,9 +1660,10 @@ const stylePresets = [
       lastFinalTime = 0;
       recordStartTime = performance.now();
       if (micLabel) micLabel.textContent = "Stop Recording (Click to Finish)";
-      micPulse?.classList.remove('hidden');
-      liveSpeechPreviewBox?.classList.remove('hidden');
-      if (liveSpeechPreviewText) liveSpeechPreviewText.textContent = "Listening... Speak clearly into your mic.";
+      micPulse?.classList.remove("hidden");
+      liveSpeechPreviewBox?.classList.remove("hidden");
+      if (liveSpeechPreviewText)
+        liveSpeechPreviewText.textContent = "Listening... Speak clearly into your mic.";
 
       timerInterval = setInterval(() => {
         const elapsed = Math.floor((performance.now() - recordStartTime) / 1000);
@@ -1079,7 +1672,7 @@ const stylePresets = [
     };
 
     rec.onresult = (event: any) => {
-      let interimStr = '';
+      let interimStr = "";
 
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const res = event.results[i];
@@ -1094,15 +1687,15 @@ const stylePresets = [
 
             // Split into punchy 3-5 word subtitle lines for viral readability
             const words = text.split(/\s+/);
-            if (words.length <= 5) {
+            if (words.length <= 4) {
               finalizedCues.push({
                 id: String(Date.now() + finalizedCues.length),
                 start,
                 end,
-                text: text.toUpperCase()
+                text: text.toUpperCase(),
               });
             } else {
-              const chunkSize = 4;
+              const chunkSize = 3;
               const totalChunks = Math.ceil(words.length / chunkSize);
               const chunkDur = (end - start) / totalChunks;
               for (let c = 0; c < totalChunks; c++) {
@@ -1113,13 +1706,13 @@ const stylePresets = [
                   id: String(Date.now() + finalizedCues.length),
                   start: cStart,
                   end: Math.max(cStart + 0.5, cEnd),
-                  text: chunkWords.join(' ').toUpperCase()
+                  text: chunkWords.join(" ").toUpperCase(),
                 });
               }
             }
           }
         } else {
-          interimStr += text + ' ';
+          interimStr += text + " ";
         }
       }
 
@@ -1134,7 +1727,7 @@ const stylePresets = [
 
     rec.onerror = (e: any) => {
       console.warn("Speech recognition error:", e);
-      if (e.error !== 'no-speech') {
+      if (e.error !== "no-speech") {
         stopVoiceRecording();
       }
     };
@@ -1151,12 +1744,14 @@ const stylePresets = [
   function stopVoiceRecording() {
     isRecordingVoice = false;
     if (timerInterval) clearInterval(timerInterval);
-    if (micLabel) micLabel.textContent = "Record Voice (Live AI Transcribe)";
-    micPulse?.classList.add('hidden');
-    liveSpeechPreviewBox?.classList.add('hidden');
+    if (micLabel) micLabel.textContent = "Record Voice (Live AI Speech)";
+    micPulse?.classList.add("hidden");
+    liveSpeechPreviewBox?.classList.add("hidden");
 
     if (recognition) {
-      try { recognition.stop(); } catch (_) {}
+      try {
+        recognition.stop();
+      } catch (_) {}
     }
 
     if (finalizedCues.length > 0) {
@@ -1164,19 +1759,19 @@ const stylePresets = [
       duration = Math.max(10, Math.ceil(finalizedCues[finalizedCues.length - 1].end + 1));
       renderCuesTable();
       updateTimeUI();
-      switchTab('editor');
+      switchTab("editor");
     }
   }
 
-  speechLangSelect?.addEventListener('change', () => {
+  speechLangSelect?.addEventListener("change", () => {
     if (recognition && isRecordingVoice) {
       stopVoiceRecording();
     }
   });
 
-  liveSpeechBtn?.addEventListener('click', () => {
+  liveSpeechBtn?.addEventListener("click", () => {
     if (!SpeechRecognitionAPI) {
-      alert("Live Voice Recognition is supported in Chrome, Edge, Safari, and Brave. You can also upload any audio/video file or paste a script.");
+      alert("Live Voice Recognition is supported in Chrome, Edge, Safari, and Brave. You can also upload any video/audio file or paste a script.");
       return;
     }
 
@@ -1192,42 +1787,50 @@ const stylePresets = [
     }
   });
 
-  // Demo Sample Buttons in Audio Tab
-  document.querySelectorAll<HTMLButtonElement>('.sample-audio-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const sampleKey = btn.dataset.sample || 'motivation';
-      loadingOverlay?.classList.remove('hidden');
+  // Demo Sample Buttons
+  document.querySelectorAll<HTMLButtonElement>(".sample-audio-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const sampleKey = btn.dataset.sample || "hormozi";
+      loadingOverlay?.classList.remove("hidden");
+      updateProgress("Loading demo creator preset...", 70, sampleKey);
       setTimeout(() => {
-        loadingOverlay?.classList.add('hidden');
-        currentCues = [...(demoSamples[sampleKey] || demoSamples.motivation)];
+        loadingOverlay?.classList.add("hidden");
+        currentCues = [...(demoSamples[sampleKey] || demoSamples.hormozi)];
+        duration = Math.max(10, Math.ceil(currentCues[currentCues.length - 1].end + 1));
+        mediaType = "none";
+        userVideoEl.classList.add("hidden");
+        userVideoEl.src = "";
+        canvas.classList.remove("hidden");
+        audioBadge?.classList.add("hidden");
         renderCuesTable();
-        switchTab('editor');
-      }, 1200);
+        updateTimeUI();
+        switchTab("editor");
+      }, 500);
     });
   });
 
-  // Script Synchronizer Tab Logic
-  const wpmSlider = document.getElementById('wpm-slider') as HTMLInputElement;
-  const wpmVal = document.getElementById('wpm-val');
-  wpmSlider?.addEventListener('input', () => {
+  // Script Synchronizer Logic
+  const wpmSlider = document.getElementById("wpm-slider") as HTMLInputElement;
+  const wpmVal = document.getElementById("wpm-val");
+  wpmSlider?.addEventListener("input", () => {
     if (wpmVal) wpmVal.textContent = `${wpmSlider.value} WPM`;
   });
 
-  const wordsSlider = document.getElementById('words-slider') as HTMLInputElement;
-  const wordsVal = document.getElementById('words-val');
-  wordsSlider?.addEventListener('input', () => {
+  const wordsSlider = document.getElementById("words-slider") as HTMLInputElement;
+  const wordsVal = document.getElementById("words-val");
+  wordsSlider?.addEventListener("input", () => {
     if (wordsVal) wordsVal.textContent = `${wordsSlider.value} words`;
   });
 
-  document.getElementById('insert-sample-script')?.addEventListener('click', () => {
-    const textarea = document.getElementById('script-textarea') as HTMLTextAreaElement;
+  document.getElementById("insert-sample-script")?.addEventListener("click", () => {
+    const textarea = document.getElementById("script-textarea") as HTMLTextAreaElement;
     if (textarea) {
-      textarea.value = "In this video, I will show you how to generate viral subtitles in under 60 seconds without paying for expensive software. You can customize colors, add active word animations, and export ready-to-publish subtitle files instantly.";
+      textarea.value = "In this video, I will show you how to generate viral subtitles in under 60 seconds. You can customize colors, add active word animations, and export ready-to-publish subtitle files instantly.";
     }
   });
 
-  document.getElementById('generate-script-cues-btn')?.addEventListener('click', () => {
-    const textarea = document.getElementById('script-textarea') as HTMLTextAreaElement;
+  document.getElementById("generate-script-cues-btn")?.addEventListener("click", () => {
+    const textarea = document.getElementById("script-textarea") as HTMLTextAreaElement;
     const text = textarea?.value.trim();
     if (!text) {
       alert("Please paste or type your script text first.");
@@ -1235,7 +1838,7 @@ const stylePresets = [
     }
 
     const wpm = Number(wpmSlider?.value || 160);
-    const maxWordsPerLine = Number(wordsSlider?.value || 4);
+    const maxWordsPerLine = Number(wordsSlider?.value || 3);
     const words = text.split(/\s+/);
     const secPerWord = 60 / wpm;
 
@@ -1250,13 +1853,13 @@ const stylePresets = [
 
       if (currentLineWords.length >= maxWordsPerLine || isPunctuation || isLast) {
         const lineDuration = currentLineWords.length * secPerWord;
-        const lineEndTime = lineStartTime + Math.max(1.2, lineDuration);
+        const lineEndTime = lineStartTime + Math.max(1.0, lineDuration);
 
         newCues.push({
           id: String(i),
           start: Number(lineStartTime.toFixed(1)),
           end: Number(lineEndTime.toFixed(1)),
-          text: currentLineWords.join(' ').toUpperCase()
+          text: currentLineWords.join(" ").toUpperCase(),
         });
 
         lineStartTime = Number((lineEndTime + 0.15).toFixed(1));
@@ -1265,31 +1868,122 @@ const stylePresets = [
     });
 
     currentCues = newCues;
+    duration = Math.max(10, Math.ceil(newCues[newCues.length - 1].end + 1));
     renderCuesTable();
-    switchTab('editor');
+    updateTimeUI();
+    switchTab("editor");
+  });
+
+  // Render Cues Table
+  function renderCuesTable() {
+    if (!cuesContainer) return;
+    cuesContainer.innerHTML = "";
+
+    currentCues.forEach((cue, index) => {
+      const row = document.createElement("div");
+      row.className =
+        "flex items-center gap-2 p-2.5 text-xs hover:bg-[var(--color-canvas-soft)] transition-colors group";
+      row.dataset.cueId = cue.id;
+      row.innerHTML = `
+        <button class="cue-jump-btn shrink-0 w-6 h-6 rounded bg-[var(--color-canvas-soft-2)] hover:bg-[var(--color-ink)] hover:text-[var(--color-on-primary)] font-mono font-bold text-[10px] flex items-center justify-center transition-colors cursor-pointer" title="Jump to timestamp">
+          ${index + 1}
+        </button>
+        <input
+          type="number"
+          step="0.1"
+          class="cue-start-input w-14 px-1.5 py-1 rounded border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] font-mono text-center focus:ring-1 focus:ring-[var(--color-link)] focus:outline-none"
+          value="${cue.start.toFixed(1)}"
+          aria-label="Start time in seconds"
+        />
+        <span class="text-[var(--color-mute)] text-[10px]">→</span>
+        <input
+          type="number"
+          step="0.1"
+          class="cue-end-input w-14 px-1.5 py-1 rounded border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] font-mono text-center focus:ring-1 focus:ring-[var(--color-link)] focus:outline-none"
+          value="${cue.end.toFixed(1)}"
+          aria-label="End time in seconds"
+        />
+        <input
+          type="text"
+          class="cue-text-input flex-1 px-2.5 py-1 rounded border border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] font-medium focus:ring-1 focus:ring-[var(--color-link)] focus:outline-none"
+          value="${cue.text}"
+          aria-label="Subtitle cue text"
+        />
+        <button class="cue-delete-btn text-[var(--color-mute)] hover:text-[var(--color-error)] px-2 py-1 rounded text-sm transition-colors cursor-pointer" title="Delete line">
+          ✕
+        </button>
+      `;
+
+      row.querySelector(".cue-jump-btn")?.addEventListener("click", () => {
+        seekTo(cue.start);
+      });
+
+      row.querySelector(".cue-start-input")?.addEventListener("change", (e) => {
+        cue.start = Number((e.target as HTMLInputElement).value);
+      });
+
+      row.querySelector(".cue-end-input")?.addEventListener("change", (e) => {
+        cue.end = Number((e.target as HTMLInputElement).value);
+      });
+
+      row.querySelector(".cue-text-input")?.addEventListener("input", (e) => {
+        cue.text = (e.target as HTMLInputElement).value;
+        lastRenderedCueId = "";
+        updateSubtitleOverlay();
+      });
+
+      row.querySelector(".cue-delete-btn")?.addEventListener("click", () => {
+        currentCues = currentCues.filter((c) => c.id !== cue.id);
+        renderCuesTable();
+        lastRenderedCueId = "";
+        updateSubtitleOverlay();
+      });
+
+      cuesContainer.appendChild(row);
+    });
+
+    if (cueCountBadge) cueCountBadge.textContent = `${currentCues.length} cues`;
+    if (currentCues.length > 0) {
+      const maxEnd = currentCues[currentCues.length - 1].end;
+      if (!isCustomMediaLoaded) {
+        duration = Math.max(10, Math.ceil(maxEnd + 1));
+        updateTimeUI();
+      }
+    }
+  }
+
+  // Add Cue Button
+  document.getElementById("add-cue-btn")?.addEventListener("click", () => {
+    const lastEnd = currentCues.length > 0 ? currentCues[currentCues.length - 1].end : 0;
+    currentCues.push({
+      id: String(Date.now()),
+      start: Number((lastEnd + 0.2).toFixed(1)),
+      end: Number((lastEnd + 2.5).toFixed(1)),
+      text: "NEW VIRAL SUBTITLE LINE 🔥",
+    });
+    renderCuesTable();
   });
 
   // ─── Export Generators ──────────────────────────────────────
-
   function formatSrtTimestamp(seconds: number): string {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
     const ms = Math.floor((seconds % 1) * 1000);
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
   }
 
   function formatVttTimestamp(seconds: number): string {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     const ms = Math.floor((seconds % 1) * 1000);
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${String(ms).padStart(3, "0")}`;
   }
 
   function downloadFile(content: string, filename: string, type: string) {
     const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
@@ -1299,85 +1993,79 @@ const stylePresets = [
   }
 
   // Download .SRT
-  document.getElementById('export-srt-btn')?.addEventListener('click', () => {
-    let srtText = '';
+  document.getElementById("export-srt-btn")?.addEventListener("click", () => {
+    let srtText = "";
     currentCues.forEach((cue, i) => {
       srtText += `${i + 1}\n`;
       srtText += `${formatSrtTimestamp(cue.start)} --> ${formatSrtTimestamp(cue.end)}\n`;
       srtText += `${cue.text}\n\n`;
     });
-    downloadFile(srtText, 'subtitles.srt', 'text/plain');
+    downloadFile(srtText, "subtitles.srt", "text/plain");
   });
 
   // Download .VTT
-  document.getElementById('export-vtt-btn')?.addEventListener('click', () => {
-    let vttText = 'WEBVTT\n\n';
+  document.getElementById("export-vtt-btn")?.addEventListener("click", () => {
+    let vttText = "WEBVTT\n\n";
     currentCues.forEach((cue, i) => {
       vttText += `${i + 1}\n`;
       vttText += `${formatVttTimestamp(cue.start)} --> ${formatVttTimestamp(cue.end)}\n`;
       vttText += `${cue.text}\n\n`;
     });
-    downloadFile(vttText, 'subtitles.vtt', 'text/vtt');
+    downloadFile(vttText, "subtitles.vtt", "text/vtt");
   });
 
   // Download .TXT
-  document.getElementById('export-txt-btn')?.addEventListener('click', () => {
-    const txtContent = currentCues.map(c => c.text).join('\n');
-    downloadFile(txtContent, 'transcript.txt', 'text/plain');
+  document.getElementById("export-txt-btn")?.addEventListener("click", () => {
+    const txtContent = currentCues.map((c) => c.text).join("\n");
+    downloadFile(txtContent, "transcript.txt", "text/plain");
   });
 
   // Copy to Clipboard
-  document.getElementById('copy-all-btn')?.addEventListener('click', async () => {
-    let srtText = '';
+  document.getElementById("copy-all-btn")?.addEventListener("click", async () => {
+    let srtText = "";
     currentCues.forEach((cue, i) => {
       srtText += `${i + 1}\n${formatSrtTimestamp(cue.start)} --> ${formatSrtTimestamp(cue.end)}\n${cue.text}\n\n`;
     });
     try {
       await navigator.clipboard.writeText(srtText);
-      const btn = document.getElementById('copy-all-btn');
+      const btn = document.getElementById("copy-all-btn");
       if (btn) {
         const orig = btn.textContent;
-        btn.textContent = '✓ Copied!';
-        setTimeout(() => { btn.textContent = orig; }, 2000);
+        btn.textContent = "✓ Copied!";
+        setTimeout(() => {
+          btn.textContent = orig;
+        }, 2000);
       }
     } catch (_) {}
   });
 
-  // Custom Video File Upload in Editor Viewport
-  const customVideoInput = document.getElementById('custom-video-input') as HTMLInputElement;
-  customVideoInput?.addEventListener('change', () => {
-    const file = customVideoInput.files?.[0];
-    if (file) {
-      handleMediaFile(file);
-    }
-  });
+  // ─── Burn Subtitles to Video Export Engine ───────────────────
+  const burnVideoBtn = document.getElementById("burn-video-btn");
+  const burnVideoLabel = document.getElementById("burn-video-label");
 
-  // Burn Subtitles to Video Export Engine (MediaRecorder API)
-  const burnVideoBtn = document.getElementById('burn-video-btn');
-  const burnVideoLabel = document.getElementById('burn-video-label');
-
-  burnVideoBtn?.addEventListener('click', async () => {
+  burnVideoBtn?.addEventListener("click", async () => {
     if (!canvas) return;
 
-    const userVideoEl = document.getElementById('user-video') as HTMLVideoElement;
-    const hasCustomVideo = userVideoEl && !userVideoEl.classList.contains('hidden') && userVideoEl.src;
-
+    const hasVideo = mediaType === "video" && userVideoEl && userVideoEl.src;
     if (burnVideoLabel) burnVideoLabel.textContent = "Rendering Video... (Please wait)";
-    burnVideoBtn.setAttribute('disabled', 'true');
+    burnVideoBtn.setAttribute("disabled", "true");
 
-    // Create offscreen recording canvas
-    const recordCanvas = document.createElement('canvas');
-    recordCanvas.width = canvas.width || 720;
-    recordCanvas.height = canvas.height || 1280;
-    const rctx = recordCanvas.getContext('2d');
+    const recordCanvas = document.createElement("canvas");
+    recordCanvas.width = hasVideo && userVideoEl.videoWidth ? userVideoEl.videoWidth : 720;
+    recordCanvas.height = hasVideo && userVideoEl.videoHeight ? userVideoEl.videoHeight : 1280;
+    const rctx = recordCanvas.getContext("2d");
     if (!rctx) return;
 
     const stream = recordCanvas.captureStream(30);
     let mediaRecorder: MediaRecorder;
     try {
-      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+      mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
     } catch (_) {
-      mediaRecorder = new MediaRecorder(stream);
+      try {
+        mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+      } catch (_) {
+        mediaRecorder = new MediaRecorder(stream);
+      }
     }
 
     const chunks: Blob[] = [];
@@ -1386,11 +2074,11 @@ const stylePresets = [
     };
 
     mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' });
+      const blob = new Blob(chunks, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'video_with_subtitles.webm';
+      a.download = "video_with_animated_subtitles.webm";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1399,57 +2087,64 @@ const stylePresets = [
       if (burnVideoLabel) burnVideoLabel.textContent = "✓ Video Downloaded!";
       setTimeout(() => {
         if (burnVideoLabel) burnVideoLabel.textContent = "Download Video with Subtitles";
-        burnVideoBtn.removeAttribute('disabled');
+        burnVideoBtn.removeAttribute("disabled");
       }, 3000);
     };
 
     mediaRecorder.start();
 
-    // Render 5 seconds of video with subtitles into the recorder canvas
     let renderTime = 0;
-    const renderDuration = Math.min(10, duration);
+    const renderDuration = Math.min(15, duration);
     const fps = 30;
     const frameInterval = 1000 / fps;
+
+    if (hasVideo) {
+      userVideoEl.currentTime = 0;
+      userVideoEl.play().catch(() => {});
+    }
 
     const renderInterval = setInterval(() => {
       renderTime += 1 / fps;
 
-      // Draw background: custom video frame or simulated motion canvas
-      if (hasCustomVideo && userVideoEl.videoWidth) {
+      // Draw background video frame or canvas
+      if (hasVideo && userVideoEl.videoWidth) {
         rctx.drawImage(userVideoEl, 0, 0, recordCanvas.width, recordCanvas.height);
       } else {
         rctx.drawImage(canvas, 0, 0, recordCanvas.width, recordCanvas.height);
       }
 
-      // Draw subtitle overlay
-      const activeCue = currentCues.find(c => renderTime >= c.start && renderTime <= c.end);
+      // Draw active subtitle overlay
+      const activeCue = currentCues.find((c) => renderTime >= c.start && renderTime <= c.end);
       if (activeCue) {
         rctx.save();
-        rctx.font = "bold 28px 'Outfit', Inter, sans-serif";
+        const posPercent = Number(posSlider?.value || 18) / 100;
+        const textY = recordCanvas.height * (1 - posPercent);
+        const fontSize = Math.round((Number(fontSlider?.value || 24) / 340) * recordCanvas.width);
+
+        rctx.font = `900 ${fontSize}px 'Outfit', Inter, sans-serif`;
         rctx.textAlign = "center";
         rctx.textBaseline = "middle";
 
-        const textY = recordCanvas.height * 0.85;
-
-        // Black outline
+        // Draw outline / shadow
         rctx.strokeStyle = "#000000";
-        rctx.lineWidth = 6;
+        rctx.lineWidth = Math.max(4, Math.round(fontSize * 0.18));
         rctx.strokeText(activeCue.text, recordCanvas.width / 2, textY);
 
-        // Highlight color
-        rctx.fillStyle = currentStyle === 'hormozi' ? '#facc15' : currentStyle === 'beast' ? '#38bdf8' : '#ffffff';
+        // Fill active color
+        rctx.fillStyle = activeColor || "#facc15";
         rctx.fillText(activeCue.text, recordCanvas.width / 2, textY);
         rctx.restore();
       }
 
       if (renderTime >= renderDuration) {
         clearInterval(renderInterval);
+        if (hasVideo) userVideoEl.pause();
         mediaRecorder.stop();
       }
     }, frameInterval);
   });
 
-  // Init
+  // Initial setup
   renderCuesTable();
   animFrameId = requestAnimationFrame(tick);
 </script>
