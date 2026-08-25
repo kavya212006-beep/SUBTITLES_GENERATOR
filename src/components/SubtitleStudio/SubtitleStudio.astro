@@ -1343,6 +1343,23 @@ const stylePresets = [
     if (detail && detailText) detailText.textContent = detail;
   }
 
+  function sendCloudflareLog(level: "info" | "warn" | "error", message: string, meta?: any) {
+    try {
+      const payload = JSON.stringify({ level, source: "SubtitleStudio", message, meta });
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: "application/json" });
+        navigator.sendBeacon("/api/log", blob);
+      } else {
+        fetch("/api/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    } catch (_) {}
+  }
+
   // Drag & drop
   dropzone?.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -1373,7 +1390,7 @@ const stylePresets = [
   // ─── Probing Media Duration & Dimensions Accurately ──────────
   function probeMediaDuration(mediaEl: HTMLMediaElement): Promise<number> {
     return new Promise((resolve) => {
-      if (isFinite(mediaEl.duration) && mediaEl.duration > 0) {
+      if (isFinite(mediaEl.duration) && mediaEl.duration > 0 && mediaEl.duration !== Infinity) {
         return resolve(mediaEl.duration);
       }
 
@@ -1382,160 +1399,432 @@ const stylePresets = [
         if (!resolved) {
           resolved = true;
           cleanup();
-          resolve(Math.max(1, dur));
+          resolve(dur > 0 && isFinite(dur) ? dur : 10);
+        }
+      };
+
+      const checkDuration = () => {
+        if (isFinite(mediaEl.duration) && mediaEl.duration > 0 && mediaEl.duration !== Infinity) {
+          done(mediaEl.duration);
+          return true;
+        }
+        return false;
+      };
+
+      const seekToEnd = () => {
+        const onSeeked = () => {
+          mediaEl.removeEventListener("seeked", onSeeked);
+          const dur = isFinite(mediaEl.currentTime) && mediaEl.currentTime > 0 ? mediaEl.currentTime : (isFinite(mediaEl.duration) && mediaEl.duration > 0 ? mediaEl.duration : 10);
+          mediaEl.currentTime = 0;
+          done(dur);
+        };
+        mediaEl.addEventListener("seeked", onSeeked, { once: true });
+        try {
+          mediaEl.currentTime = 1e101;
+        } catch (_) {
+          done(10);
         }
       };
 
       const onMetadata = () => {
-        if (isFinite(mediaEl.duration) && mediaEl.duration > 0) {
-          done(mediaEl.duration);
-        } else {
-          // Handle variable/streamed durations by seeking
-          const onSeeked = () => {
-            mediaEl.removeEventListener("seeked", onSeeked);
-            const dur = isFinite(mediaEl.duration) && mediaEl.duration > 0 ? mediaEl.duration : 10;
-            mediaEl.currentTime = 0;
-            done(dur);
-          };
-          mediaEl.addEventListener("seeked", onSeeked, { once: true });
-          try {
-            mediaEl.currentTime = 1e101;
-          } catch (_) {
-            done(10);
-          }
+        if (!checkDuration()) {
+          seekToEnd();
+        }
+      };
+
+      const onCanPlay = () => {
+        if (!checkDuration()) {
+          seekToEnd();
         }
       };
 
       const onError = () => done(10);
-      const onCanPlay = () => {
-        if (isFinite(mediaEl.duration) && mediaEl.duration > 0) {
-          done(mediaEl.duration);
-        }
-      };
 
       const cleanup = () => {
         mediaEl.removeEventListener("loadedmetadata", onMetadata);
+        mediaEl.removeEventListener("loadeddata", onMetadata);
+        mediaEl.removeEventListener("durationchange", onMetadata);
         mediaEl.removeEventListener("canplay", onCanPlay);
         mediaEl.removeEventListener("error", onError);
       };
 
       mediaEl.addEventListener("loadedmetadata", onMetadata, { once: true });
+      mediaEl.addEventListener("loadeddata", onMetadata, { once: true });
+      mediaEl.addEventListener("durationchange", onMetadata, { once: true });
       mediaEl.addEventListener("canplay", onCanPlay, { once: true });
       mediaEl.addEventListener("error", onError, { once: true });
 
       // Fallback timeout in case browser never fires metadata
       setTimeout(() => {
         if (!resolved) {
-          done(isFinite(mediaEl.duration) && mediaEl.duration > 0 ? mediaEl.duration : 10);
+          const finalDur = isFinite(mediaEl.duration) && mediaEl.duration > 0 ? mediaEl.duration : (isFinite(mediaEl.currentTime) && mediaEl.currentTime > 0 ? mediaEl.currentTime : 10);
+          done(finalDur);
         }
       }, 3500);
     });
   }
 
+  // ─── Fast In-Memory WAV Encoder for AI Pipeline ─────────────
+  function encodeAudioToWav(samples: Float32Array, sampleRate: number = 16000): Blob {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+
+    const writeString = (offset: number, str: string) => {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+      }
+    };
+
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, 1, true); // Mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true); // block align
+    view.setUint16(34, 16, true); // 16-bit
+    writeString(36, "data");
+    view.setUint32(40, samples.length * 2, true);
+
+    let offset = 44;
+    for (let i = 0; i < samples.length; i++, offset += 2) {
+      const s = Math.max(-1, Math.min(1, samples[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    }
+
+    return new Blob([view], { type: "audio/wav" });
+  }
+
   // ─── AI Speech-to-Text & Audio Extraction Engine ────────────
   let whisperPipeline: any = null;
+  let currentWhisperModel: string | null = null;
 
-  async function getWhisperPipeline(onProgress?: (progress: number, text: string) => void) {
-    if (whisperPipeline) return whisperPipeline;
+  async function getWhisperPipeline(
+    selectedLang: string = "auto",
+    onProgress?: (progress: number, text: string) => void
+  ) {
+    const isEnglishOnly = selectedLang === "en-US" || selectedLang === "en-GB" || selectedLang === "en-IN" || selectedLang === "en";
+    const targetModel = isEnglishOnly ? "Xenova/whisper-tiny.en" : "Xenova/whisper-tiny";
+
+    if (whisperPipeline && currentWhisperModel === targetModel) {
+      console.log(`[SubStudio] [Pipeline] Reusing cached Whisper pipeline (${targetModel})`);
+      return whisperPipeline;
+    }
+
     try {
-      onProgress?.(30, "Initializing Whisper AI model in browser...");
-      const { pipeline, env } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3");
-      env.allowLocalModels = false;
+      onProgress?.(30, "Initializing on-device AI transcription engine...");
+      console.log(`[SubStudio] [Pipeline] Loading Transformers.js pipeline for model: ${targetModel}...`);
+      const { pipeline, env } = await import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2");
       
-      whisperPipeline = await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny", {
-        device: ("gpu" in navigator ? "webgpu" : "wasm") as any,
+      env.allowLocalModels = false;
+      env.allowRemoteModels = true;
+      env.useBrowserCache = true;
+      env.backends.onnx.wasm.numThreads = 1;
+      env.remoteHost = "https://huggingface.co";
+      env.remotePathTemplate = "{model}/resolve/{revision}/";
+      env.backends.onnx.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/";
+      
+      whisperPipeline = await pipeline("automatic-speech-recognition", targetModel, {
+        quantized: true,
         progress_callback: (p: any) => {
           if (p.status === "progress" && p.total) {
-            const pct = Math.round(30 + ((p.loaded || 0) / p.total) * 35);
-            onProgress?.(pct, `Loading AI Model: ${p.file || "weights"} (${Math.round(p.progress || 0)}%)`);
+            const pct = Math.round(30 + ((p.loaded || 0) / p.total) * 40);
+            const mbLoaded = (p.loaded / (1024 * 1024)).toFixed(1);
+            const mbTotal = (p.total / (1024 * 1024)).toFixed(1);
+            onProgress?.(pct, `Loading AI Model: ${p.file || "weights"} (${mbLoaded}/${mbTotal} MB)`);
+          } else if (p.status === "ready") {
+            onProgress?.(70, "AI Model ready! Transcribing speech...");
           }
         },
       });
+      currentWhisperModel = targetModel;
+      console.log(`[SubStudio] [Pipeline Success] Whisper pipeline (${targetModel}) loaded!`);
       return whisperPipeline;
-    } catch (err) {
-      console.warn("Primary Whisper loader failed, attempting fallback...", err);
+    } catch (err: any) {
+      console.error("[SubStudio] [Pipeline Fatal] Whisper pipeline loader failed:", err);
+      throw new Error(`AI Model download failed: ${err?.message || "Network / CORS error"}`);
+    }
+  }
+
+  // ─── Fast In-Memory WebCodecs MP4/MOV Audio Demuxer & Decoder ─
+  async function decodeAudioWithWebCodecs(file: File): Promise<{ audioData: Float32Array; duration: number } | null> {
+    if (typeof (window as any).AudioDecoder === "undefined") return null;
+
+    return new Promise(async (resolve) => {
       try {
-        const { pipeline } = await import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2");
-        whisperPipeline = await pipeline("automatic-speech-recognition", "Xenova/whisper-tiny", {
-          progress_callback: (p: any) => {
-            if (p.status === "progress" && p.total) {
-              const pct = Math.round(30 + ((p.loaded || 0) / p.total) * 35);
-              onProgress?.(pct, `Loading AI Model: ${p.file || "weights"} (${Math.round(p.progress || 0)}%)`);
+        if (!(window as any).MP4Box) {
+          await new Promise<void>((res, rej) => {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/mp4box@0.5.2/dist/mp4box.all.min.js";
+            script.onload = () => res();
+            script.onerror = (e) => rej(e);
+            document.head.appendChild(script);
+          });
+        }
+
+        const MP4Box = (window as any).MP4Box;
+        if (!MP4Box) return resolve(null);
+
+        const mp4boxfile = MP4Box.createFile();
+        const arrayBuffer = await file.arrayBuffer();
+        (arrayBuffer as any).fileStart = 0;
+
+        let audioTrack: any = null;
+        let decoder: any = null;
+        const pcmChunks: Float32Array[] = [];
+        let totalPcmSamples = 0;
+        let trackSampleRate = 44100;
+        let trackTimescale = 1000;
+        let trackDuration = 0;
+        let isConfigured = false;
+
+        const configureDecoder = (track: any) => {
+          if (isConfigured) return;
+          isConfigured = true;
+
+          trackSampleRate = track.audio?.sample_rate || 44100;
+          trackTimescale = track.timescale || trackSampleRate;
+          trackDuration = (track.duration || 0) / trackTimescale;
+
+          const sampleRateMap: Record<number, number> = {
+            96000: 0, 88200: 1, 64000: 2, 48000: 3, 44100: 4, 32000: 5,
+            24000: 6, 22050: 7, 16000: 8, 12000: 9, 11025: 10, 8000: 11, 7350: 12,
+          };
+          const freqIdx = sampleRateMap[trackSampleRate] !== undefined ? sampleRateMap[trackSampleRate] : 4;
+          const aot = 2; // AAC-LC
+          const ch = track.audio?.channel_count || 2;
+          const byte1 = (aot << 3) | (freqIdx >> 1);
+          const byte2 = ((freqIdx & 1) << 7) | (ch << 3);
+          const aacDesc = new Uint8Array([byte1, byte2]);
+
+          const codecStr = track.codec && track.codec.startsWith("mp4a") ? track.codec : "mp4a.40.2";
+
+          decoder = new (window as any).AudioDecoder({
+            output: (audioData: any) => {
+              const numFrames = audioData.numberOfFrames;
+              const channelData = new Float32Array(numFrames);
+              audioData.copyTo(channelData, { planeIndex: 0, format: "f32-planar" });
+              pcmChunks.push(channelData);
+              totalPcmSamples += numFrames;
+              if (audioData.sampleRate) trackSampleRate = audioData.sampleRate;
+              audioData.close();
+            },
+            error: (e: any) => {
+              console.warn("[SubStudio] AudioDecoder error:", e);
+            },
+          });
+
+          decoder.configure({
+            codec: codecStr,
+            sampleRate: trackSampleRate,
+            numberOfChannels: ch,
+            description: aacDesc,
+          });
+        };
+
+        mp4boxfile.onReady = function (info: any) {
+          if (!info.audioTracks || info.audioTracks.length === 0) {
+            resolve(null);
+            return;
+          }
+
+          audioTrack = info.audioTracks[0];
+          configureDecoder(audioTrack);
+
+          if (info.duration && info.timescale) {
+            trackDuration = Math.max(trackDuration, info.duration / info.timescale);
+          }
+
+          mp4boxfile.setExtractionOptions(audioTrack.id, null, { nbSamples: 100000 });
+          mp4boxfile.start();
+        };
+
+        mp4boxfile.onSamples = function (_id: number, _user: any, samples: any[]) {
+          if (!decoder && audioTrack) configureDecoder(audioTrack);
+          if (decoder && samples && samples.length > 0) {
+            for (const sample of samples) {
+              const chunk = new (window as any).EncodedAudioChunk({
+                type: sample.is_sync ? "key" : "delta",
+                timestamp: (1e6 * sample.cts) / (sample.timescale || trackTimescale),
+                duration: (1e6 * sample.duration) / (sample.timescale || trackTimescale),
+                data: sample.data,
+              });
+              decoder.decode(chunk);
             }
-          },
-        });
-        return whisperPipeline;
-      } catch (fallbackErr) {
-        console.error("Whisper pipeline initialization error:", fallbackErr);
-        throw fallbackErr;
-      }
-    }
-  }
+          }
+        };
 
-  async function extractAudioData(file: File): Promise<{ audioData: Float32Array; duration: number } | null> {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const tempAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      let decodedBuffer: AudioBuffer;
-      try {
-        decodedBuffer = await tempAudioCtx.decodeAudioData(arrayBuffer);
-      } catch (e) {
-        console.warn("decodeAudioData failed for this container:", e);
-        try { await tempAudioCtx.close(); } catch (_) {}
-        return null;
-      } finally {
-        try { await tempAudioCtx.close(); } catch (_) {}
-      }
+        mp4boxfile.onError = function (e: any) {
+          console.warn("[SubStudio] MP4Box error:", e);
+        };
 
-      if (!decodedBuffer || decodedBuffer.length === 0) {
-        return null;
-      }
+        mp4boxfile.appendBuffer(arrayBuffer);
+        mp4boxfile.flush();
 
-      // Resample to 16,000 Hz Mono Float32Array (standard Whisper format)
-      const targetSampleRate = 16000;
-      const targetLength = Math.ceil(decodedBuffer.duration * targetSampleRate);
-      const offlineCtx = new OfflineAudioContext(1, targetLength, targetSampleRate);
-      const source = offlineCtx.createBufferSource();
-      source.buffer = decodedBuffer;
-      source.connect(offlineCtx.destination);
-      source.start(0);
+        if (decoder) {
+          await decoder.flush().catch(() => {});
+          decoder.close();
+        }
 
-      const resampledBuffer = await offlineCtx.startRendering();
-      const audioData = resampledBuffer.getChannelData(0);
-
-      return { audioData, duration: decodedBuffer.duration };
-    } catch (err) {
-      console.warn("Audio extraction error:", err);
-      return null;
-    }
-  }
-
-  // ─── Fallback: Extract Audio via Video Element Capture ──────
-  async function extractAudioViaCapture(blobUrl: string, mediaDuration: number): Promise<Float32Array | null> {
-    return new Promise((resolve) => {
-      try {
-        const tempVideo = document.createElement("video");
-        tempVideo.crossOrigin = "anonymous";
-        tempVideo.preload = "auto";
-        tempVideo.muted = false;
-        tempVideo.volume = 0;
-        tempVideo.src = blobUrl;
-
-        const captureCtx = new AudioContext({ sampleRate: 16000 });
-        let sourceNode: MediaElementAudioSourceNode;
-        try {
-          sourceNode = captureCtx.createMediaElementSource(tempVideo);
-        } catch (_) {
-          captureCtx.close().catch(() => {});
+        if (pcmChunks.length === 0 || totalPcmSamples === 0) {
           resolve(null);
           return;
         }
 
+        const fullPcm = new Float32Array(totalPcmSamples);
+        let offset = 0;
+        for (const c of pcmChunks) {
+          fullPcm.set(c, offset);
+          offset += c.length;
+        }
+
+        const calculatedDur = totalPcmSamples / trackSampleRate;
+        const finalDur = Math.max(trackDuration, calculatedDur);
+
+        // High-quality polyphase sinc anti-aliasing resampling using OfflineAudioContext
+        try {
+          const tempBuffer = new AudioBuffer({
+            numberOfChannels: 1,
+            length: fullPcm.length,
+            sampleRate: trackSampleRate,
+          });
+          tempBuffer.copyToChannel(fullPcm, 0);
+
+          const targetLen = Math.ceil(finalDur * 16000);
+          const offlineCtx = new OfflineAudioContext(1, targetLen, 16000);
+          const source = offlineCtx.createBufferSource();
+          source.buffer = tempBuffer;
+          source.connect(offlineCtx.destination);
+          source.start(0);
+
+          const resampledBuffer = await offlineCtx.startRendering();
+          resolve({ audioData: resampledBuffer.getChannelData(0), duration: finalDur });
+        } catch (_) {
+          resolve({ audioData: fullPcm, duration: finalDur });
+        }
+      } catch (e) {
+        console.warn("[SubStudio] decodeAudioWithWebCodecs exception:", e);
+        resolve(null);
+      }
+    });
+  }
+
+  async function extractAudioData(file: File): Promise<{ audioData: Float32Array; duration: number } | null> {
+    // 1. Primary: Native AudioContext.decodeAudioData (instant, studio quality for MP4, MOV, WebM, MP3, WAV, AAC)
+    try {
+      console.log("[SubStudio] extractAudioData: starting WebAudio decodeAudioData, file size:", file.size, "type:", file.type);
+      const arrayBuffer = await file.arrayBuffer();
+      const tempAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      if (tempAudioCtx.state === "suspended") {
+        await tempAudioCtx.resume().catch(() => {});
+      }
+
+      let decodedBuffer: AudioBuffer | null = null;
+      try {
+        decodedBuffer = await tempAudioCtx.decodeAudioData(arrayBuffer.slice(0));
+      } catch (e) {
+        console.warn("[SubStudio] extractAudioData: primary decodeAudioData rejected, will try WebCodecs fallback:", e);
+      } finally {
+        try { await tempAudioCtx.close(); } catch (_) {}
+      }
+
+      if (decodedBuffer && decodedBuffer.length > 0) {
+        // Resample with anti-aliasing to 16,000 Hz Mono Float32Array (Whisper native format)
+        const targetSampleRate = 16000;
+        const targetLength = Math.ceil(decodedBuffer.duration * targetSampleRate);
+        const offlineCtx = new OfflineAudioContext(1, targetLength, targetSampleRate);
+        const source = offlineCtx.createBufferSource();
+        source.buffer = decodedBuffer;
+        source.connect(offlineCtx.destination);
+        source.start(0);
+
+        const resampledBuffer = await offlineCtx.startRendering();
+        const audioData = resampledBuffer.getChannelData(0);
+        console.log("[SubStudio] extractAudioData: WebAudio SUCCESS, samples:", audioData.length, "duration:", decodedBuffer.duration);
+        sendCloudflareLog("info", "WebAudio extraction success", {
+          samples: audioData.length,
+          durationSec: decodedBuffer.duration,
+          fileSize: file.size,
+        });
+
+        return { audioData, duration: decodedBuffer.duration };
+      }
+    } catch (err) {
+      console.warn("[SubStudio] extractAudioData WebAudio exception:", err);
+    }
+
+    // 2. Secondary: WebCodecs + MP4Box for MP4/MOV if decodeAudioData did not support the container
+    try {
+      console.log("[SubStudio] Attempting WebCodecs + MP4Box audio extraction...");
+      const wcResult = await decodeAudioWithWebCodecs(file);
+      if (wcResult && wcResult.audioData && wcResult.audioData.length > 0) {
+        console.log("[SubStudio] WebCodecs extraction SUCCESS, samples:", wcResult.audioData.length, "duration:", wcResult.duration);
+        sendCloudflareLog("info", "WebCodecs audio extraction success", {
+          samples: wcResult.audioData.length,
+          durationSec: wcResult.duration,
+          fileSize: file.size,
+        });
+        return wcResult;
+      }
+    } catch (e) {
+      console.warn("[SubStudio] WebCodecs extraction fallback failed:", e);
+    }
+
+    return null;
+  }
+
+  // ─── Fallback: Extract Audio via Video Element Fast-Capture ─
+  async function extractAudioViaCapture(blobUrl: string, mediaDuration: number): Promise<Float32Array | null> {
+    return new Promise(async (resolve) => {
+      try {
+        console.log("[SubStudio] extractAudioViaCapture: starting, duration:", mediaDuration);
+        const tempVideo = document.createElement("video");
+        tempVideo.crossOrigin = "anonymous";
+        tempVideo.preload = "auto";
+        tempVideo.playsInline = true;
+        tempVideo.muted = false;
+        tempVideo.volume = 1.0;
+        tempVideo.style.position = "fixed";
+        tempVideo.style.left = "-9999px";
+        tempVideo.style.width = "1px";
+        tempVideo.style.height = "1px";
+        tempVideo.style.opacity = "0";
+        tempVideo.style.pointerEvents = "none";
+        document.body.appendChild(tempVideo);
+
+        const captureCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (captureCtx.state === "suspended") {
+          await captureCtx.resume().catch(() => {});
+        }
+
+        tempVideo.src = blobUrl;
+
+        let sourceNode: MediaElementAudioSourceNode;
+        try {
+          sourceNode = captureCtx.createMediaElementSource(tempVideo);
+        } catch (e) {
+          console.warn("[SubStudio] extractAudioViaCapture: createMediaElementSource FAILED:", e);
+          try { captureCtx.close(); } catch (_) {}
+          try { tempVideo.remove(); } catch (_) {}
+          resolve(null);
+          return;
+        }
+
+        const silentGain = captureCtx.createGain();
+        silentGain.gain.value = 0;
+        sourceNode.connect(silentGain);
+        silentGain.connect(captureCtx.destination);
+
         const processor = captureCtx.createScriptProcessor(4096, 1, 1);
         const chunks: Float32Array[] = [];
         let totalSamples = 0;
-        const maxSamples = 30 * 16000; // Capture up to 30 seconds for Whisper
+        const maxDurationSec = mediaDuration > 0 && mediaDuration !== 10 ? mediaDuration : 600;
+        const nativeSampleRate = captureCtx.sampleRate || 44100;
+        const maxSamples = Math.ceil(maxDurationSec * nativeSampleRate);
 
         processor.onaudioprocess = (e) => {
           if (totalSamples >= maxSamples) return;
@@ -1551,44 +1840,68 @@ const stylePresets = [
         const cleanup = () => {
           try { processor.disconnect(); } catch (_) {}
           try { sourceNode.disconnect(); } catch (_) {}
+          try { silentGain.disconnect(); } catch (_) {}
           try { captureCtx.close(); } catch (_) {}
-          tempVideo.pause();
-          tempVideo.src = "";
+          try { tempVideo.pause(); tempVideo.src = ""; tempVideo.remove(); } catch (_) {}
         };
 
+        let captureFinished = false;
         const finishCapture = () => {
+          if (captureFinished) return;
+          captureFinished = true;
           cleanup();
-          if (chunks.length === 0) {
+          if (chunks.length === 0 || totalSamples === 0) {
             resolve(null);
             return;
           }
           const total = Math.min(totalSamples, maxSamples);
-          const result = new Float32Array(total);
+          const rawResult = new Float32Array(total);
           let offset = 0;
           for (const chunk of chunks) {
             const remaining = total - offset;
             if (remaining <= 0) break;
             const copyLen = Math.min(chunk.length, remaining);
-            result.set(chunk.subarray(0, copyLen), offset);
+            rawResult.set(chunk.subarray(0, copyLen), offset);
             offset += copyLen;
           }
-          resolve(result);
+
+          if (nativeSampleRate === 16000) {
+            resolve(rawResult);
+          } else {
+            const ratio = nativeSampleRate / 16000;
+            const outLength = Math.floor(rawResult.length / ratio);
+            const resampled = new Float32Array(outLength);
+            for (let i = 0; i < outLength; i++) {
+              const srcIdx = Math.floor(i * ratio);
+              resampled[i] = rawResult[srcIdx] || 0;
+            }
+            resolve(resampled);
+          }
         };
 
         tempVideo.onended = finishCapture;
-        tempVideo.onerror = () => { cleanup(); resolve(null); };
+        tempVideo.onerror = (e) => {
+          console.warn("[SubStudio] extractAudioViaCapture: video error:", e);
+          cleanup();
+          resolve(null);
+        };
 
-        // Stop after 30 seconds or when enough samples collected
+        const timeoutMs = Math.max(15000, (maxDurationSec * 1000) / 2 + 5000);
         setTimeout(() => {
           if (totalSamples > 0) finishCapture();
           else { cleanup(); resolve(null); }
-        }, Math.min(35000, mediaDuration * 1000 + 2000));
+        }, timeoutMs);
 
         tempVideo.oncanplay = () => {
-          tempVideo.playbackRate = 1;
-          tempVideo.play().catch(() => { cleanup(); resolve(null); });
+          try { tempVideo.playbackRate = 4.0; } catch (_) {}
+          tempVideo.play().catch((e) => {
+            console.warn("[SubStudio] extractAudioViaCapture: play() FAILED:", e);
+            cleanup();
+            resolve(null);
+          });
         };
-      } catch (_) {
+      } catch (e) {
+        console.warn("[SubStudio] extractAudioViaCapture: EXCEPTION:", e);
         resolve(null);
       }
     });
@@ -1599,24 +1912,33 @@ const stylePresets = [
     const t = text.trim();
     if (!t || t.length < 2) return true;
 
-    // Common Whisper-tiny hallucination patterns
     const hallucinationPatterns = [
-      /^[\s.,!?…]+$/,                        // Only punctuation
-      /(.{3,})\1{2,}/i,                       // Same phrase repeated 3+ times
+      /^[\s.,!?…:;*~^#&/\\-]+$/,
+      /(.{3,})\1{2,}/i,
       /^(thanks?|thank you)\s*(for watching|for listening)?\.?$/i,
       /^(subscribe|like and subscribe|please subscribe)/i,
-      /^(music|applause|\[music\]|\[applause\])\s*$/i,
+      /^(music|applause|laughter|laughing|cheering|silence|cough|sighs?)\.?$/i,
+      /^\[.+\]$/i, // e.g. [MUSIC], [LAUGHTER], [BLANK_AUDIO], [APPLAUSE], [NOISE]
+      /^\(.+\)$/i, // e.g. (LAUGHTER), (LAUGHING), (APPLAUSE), (GIGGLES), (CHEERING), (SIGHS), (BELL DING)
       /^you$/i,
-      /^\s*\.{2,}\s*$/,                       // Just dots
-      /^(um|uh|hmm|ah)\s*$/i,                // Just filler words
+      /^\s*\.{2,}\s*$/,
+      /^(um|uh|hmm|ah|er|eh)\s*$/i,
     ];
 
     for (const pat of hallucinationPatterns) {
       if (pat.test(t)) return true;
     }
 
-    // Reject very short text that's just 1 character
-    if (t.replace(/\s/g, "").length < 2) return true;
+    // Filter repeated sound token loops e.g. "(LAUGHTER) (LAUGHTER)"
+    const cleanTokens = t.replace(/[()[\].,!?]/g, "").trim().split(/\s+/).filter(Boolean);
+    if (cleanTokens.length > 0 && cleanTokens.every((tok) => {
+      const lower = tok.toLowerCase();
+      return lower === "laughter" || lower === "music" || lower === "applause" || lower === "cheering" || lower === "laughing";
+    })) {
+      return true;
+    }
+
+    if (t.replace(/[()[\]\s.,!?]/g, "").length < 2) return true;
 
     return false;
   }
@@ -1624,7 +1946,7 @@ const stylePresets = [
   async function handleLoadedMedia(file: File) {
     isTranscribingCancelled = false;
     loadingOverlay?.classList.remove("hidden");
-    updateProgress("Loading media into player...", 15, file.name);
+    updateProgress("Loading media into player...", 10, file.name);
 
     if (activeMediaBlobUrl) {
       URL.revokeObjectURL(activeMediaBlobUrl);
@@ -1655,7 +1977,7 @@ const stylePresets = [
         userAudioEl.src = "";
       }
 
-      updateProgress("Detecting video format & duration...", 25, "Reading media metadata");
+      updateProgress("Detecting video format & duration...", 20, "Reading media metadata");
       exactDuration = await probeMediaDuration(userVideoEl);
       duration = exactDuration;
       updateTimeUI();
@@ -1691,7 +2013,7 @@ const stylePresets = [
         audioDataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
       } catch (_) {}
 
-      updateProgress("Detecting audio track length...", 25, "Reading audio headers");
+      updateProgress("Detecting audio track length...", 20, "Reading audio headers");
       exactDuration = await probeMediaDuration(userAudioEl);
       duration = exactDuration;
       updateTimeUI();
@@ -1700,24 +2022,28 @@ const stylePresets = [
     if (isTranscribingCancelled) return;
 
     // 1. Extract audio track from media
-    updateProgress("Extracting speech audio from media...", 40, "Decoding audio waveform for AI");
+    updateProgress("Extracting speech audio from media...", 30, "Decoding waveform for AI");
     let audioResult: { audioData: Float32Array; duration: number } | null = null;
     try {
       audioResult = await extractAudioData(file);
+      console.log("[SubStudio] Primary extraction result:", audioResult ? `OK (${audioResult.audioData.length} samples)` : "FAILED");
     } catch (err) {
-      console.warn("Primary audio extraction error:", err);
+      console.warn("[SubStudio] Primary audio extraction error:", err);
+      sendCloudflareLog("warn", "Primary audio extraction exception", { error: String(err) });
     }
 
     // 1b. Fallback: capture audio from the video element if decodeAudioData failed
     if (!audioResult && isVideo && activeMediaBlobUrl && !isTranscribingCancelled) {
-      updateProgress("Using video player audio capture fallback...", 45, "Capturing speech from video playback");
+      updateProgress("Extracting video audio stream...", 35, "Capturing speech from media playback");
       try {
         const capturedAudio = await extractAudioViaCapture(activeMediaBlobUrl, duration);
+        console.log("[SubStudio] Fallback capture result:", capturedAudio ? `OK (${capturedAudio.length} samples)` : "FAILED");
         if (capturedAudio && capturedAudio.length > 800) {
-          audioResult = { audioData: capturedAudio, duration: Math.min(30, duration) };
+          audioResult = { audioData: capturedAudio, duration: duration };
         }
       } catch (err) {
-        console.warn("Fallback audio capture error:", err);
+        console.warn("[SubStudio] Fallback audio capture error:", err);
+        sendCloudflareLog("warn", "Fallback audio capture exception", { error: String(err) });
       }
     }
 
@@ -1727,110 +2053,267 @@ const stylePresets = [
     }
 
     let generatedCues: SubtitleCue[] = [];
+    let transcriptionError: Error | null = null;
 
-    // 2. Perform AI Speech Recognition (Whisper — no premature timeout, Skip button available)
+    // 2. Perform High-Accuracy AI Speech Recognition (Cloudflare Workers AI -> Client Whisper Fallback)
     if (audioResult && audioResult.audioData && audioResult.audioData.length > 0 && !isTranscribingCancelled) {
+      const selectedLangRaw = speechLangSelect?.value || "auto";
+      const totalDurationSec = audioResult.duration || (audioResult.audioData.length / 16000);
+      console.log(`[SubStudio] Step 2: Running High-Accuracy AI transcription on ${audioResult.audioData.length} samples (~${totalDurationSec.toFixed(1)}s audio), selected language: ${selectedLangRaw}...`);
+      
+      sendCloudflareLog("info", "Starting AI transcription pipeline", {
+        totalSamples: audioResult.audioData.length,
+        totalDurationSec: totalDurationSec.toFixed(1),
+        selectedLang: selectedLangRaw,
+      });
+
+      // ─── Pipeline 2A: Cloudflare Workers AI Whisper (Serverless GPU, 25s Parallel Chunking) ────
+      let serverAiSuccess = false;
       try {
-        updateProgress("Loading on-device AI transcription engine...", 55, "Whisper AI — Click 'Skip to Editor' if slow");
+        updateProgress("Transcribing speech with Cloudflare AI Whisper...", 45, "Running GPU-accelerated Whisper with Voice Activity Detection");
+        console.log("[SubStudio] [Pipeline 2A] Preparing high-accuracy 25s audio chunks for Cloudflare AI...");
 
-        const transcriber = await getWhisperPipeline((pct, text) => {
-          if (!isTranscribingCancelled) {
-            updateProgress(text, pct, "Running locally on device — Click 'Skip to Editor' anytime");
-          }
-        });
+        const sampleRate = 16000;
+        const chunkDuration = 25; // 25s chunk prevents Whisper repetition loops & hallucination
+        const chunkSamples = chunkDuration * sampleRate;
+        const totalSamples = audioResult.audioData.length;
+        const totalChunks = Math.max(1, Math.ceil(totalSamples / chunkSamples));
 
-        if (!isTranscribingCancelled) {
-          updateProgress("Transcribing spoken speech with AI...", 75, "Detecting spoken words & precise timestamps");
+        const chunkPromises = [];
+        for (let c = 0; c < totalChunks; c++) {
+          const startIdx = c * chunkSamples;
+          const endIdx = Math.min(totalSamples, (c + 1) * chunkSamples);
+          const chunkAudio = audioResult.audioData.slice(startIdx, endIdx);
+          const timeOffset = c * chunkDuration;
+          const chunkWav = encodeAudioToWav(chunkAudio, sampleRate);
 
-          const selectedLangRaw = speechLangSelect?.value || "auto";
-          const transcribeOptions: any = {
-            return_timestamps: true,
-            chunk_length_s: 30,
-            stride_length_s: 5,
-            task: "transcribe",
-          };
-          if (selectedLangRaw && selectedLangRaw !== "auto") {
-            const langCode = selectedLangRaw.split("-")[0];
-            transcribeOptions.language = langCode;
-          }
+          chunkPromises.push(
+            fetch("/api/transcribe", {
+              method: "POST",
+              headers: {
+                "Content-Type": "audio/wav",
+                "X-Language": selectedLangRaw,
+              },
+              body: chunkWav,
+            })
+            .then(async (resp) => {
+              if (!resp.ok) return [];
+              const data = await resp.json();
+              if (data.ok && Array.isArray(data.cues)) {
+                return data.cues.map((cue: SubtitleCue) => ({
+                  ...cue,
+                  start: Number((cue.start + timeOffset).toFixed(2)),
+                  end: Number((cue.end + timeOffset).toFixed(2)),
+                }));
+              }
+              return [];
+            })
+            .catch((err) => {
+              console.warn(`[SubStudio] Chunk ${c + 1} server request error:`, err);
+              return [];
+            })
+          );
+        }
 
-          const result = await transcriber(audioResult.audioData, transcribeOptions);
+        const chunkResults = await Promise.all(chunkPromises);
+        let mergedCues: SubtitleCue[] = [];
+        let cueId = 1;
+        let lastEnd = 0;
 
-          if (result && result.chunks && result.chunks.length > 0) {
-            let cueIndex = 1;
-            for (const chunk of result.chunks) {
-              const rawText = (chunk.text || "").trim();
-              if (!rawText) continue;
+        for (const chunkCues of chunkResults) {
+          for (const cue of chunkCues) {
+            const cleanText = cue.text.trim();
+            if (!cleanText || isHallucination(cleanText)) continue;
 
-              // Filter out Whisper hallucinations
-              if (isHallucination(rawText)) continue;
-
-              let start = chunk.timestamp?.[0];
-              let end = chunk.timestamp?.[1];
-
-              if (start === null || start === undefined) start = 0;
-              if (end === null || end === undefined) end = Math.min(duration, start + 2.5);
-
-              start = Number(Number(start).toFixed(1));
-              end = Number(Math.max(start + 0.8, Number(end)).toFixed(1));
-
-              // Break long speech segments (> 5 words) into punchy, readable subtitle lines
-              const words = rawText.split(/\s+/).filter(Boolean);
-              if (words.length <= 5) {
-                generatedCues.push({
-                  id: String(cueIndex++),
-                  start,
-                  end,
-                  text: rawText.toUpperCase(),
-                });
-              } else {
-                const chunkSize = 4;
-                const totalSubChunks = Math.ceil(words.length / chunkSize);
-                const chunkSpan = (end - start) / totalSubChunks;
-                for (let c = 0; c < totalSubChunks; c++) {
-                  const subWords = words.slice(c * chunkSize, (c + 1) * chunkSize);
-                  const cStart = Number((start + c * chunkSpan).toFixed(1));
-                  const cEnd = Number((cStart + chunkSpan - 0.05).toFixed(1));
-                  generatedCues.push({
-                    id: String(cueIndex++),
-                    start: cStart,
-                    end: Math.max(cStart + 0.6, cEnd),
-                    text: subWords.join(" ").toUpperCase(),
-                  });
-                }
+            // Deduplicate consecutive identical text
+            if (mergedCues.length > 0) {
+              const prev = mergedCues[mergedCues.length - 1];
+              if (prev.text === cleanText && Math.abs(cue.start - prev.start) < 3.0) {
+                prev.end = Math.max(prev.end, cue.end);
+                lastEnd = prev.end;
+                continue;
               }
             }
+
+            let start = Math.max(lastEnd, cue.start);
+            let end = Math.max(start + 0.6, cue.end);
+
+            mergedCues.push({
+              id: String(cueId++),
+              start: Number(start.toFixed(2)),
+              end: Number(end.toFixed(2)),
+              text: cleanText,
+            });
+            lastEnd = end;
           }
         }
-      } catch (aiErr) {
-        console.warn("AI Whisper notice:", aiErr);
+
+        if (mergedCues.length > 0) {
+          generatedCues = mergedCues;
+          serverAiSuccess = true;
+          console.log(`[SubStudio] [Pipeline 2A Success] Received ${generatedCues.length} high-accuracy subtitle cues from Cloudflare AI Whisper!`);
+          sendCloudflareLog("info", "Server AI transcription success", {
+            cuesCount: generatedCues.length,
+            chunks: totalChunks,
+          });
+        }
+      } catch (serverErr: any) {
+        console.warn("[SubStudio] [Pipeline 2A Warning] Server transcription error, proceeding to client fallback:", serverErr);
       }
+
+      // ─── Pipeline 2B: Client-Side WebAssembly Whisper (Offline/Local Fallback) ───
+      if (!serverAiSuccess && !isTranscribingCancelled) {
+        try {
+          console.log("[SubStudio] [Pipeline 2B] Running on-device client-side Whisper fallback...");
+          updateProgress("Loading on-device AI transcription engine...", 55, "Client-side Whisper AI fallback");
+
+          const transcriber = await getWhisperPipeline(selectedLangRaw, (pct, text) => {
+            if (!isTranscribingCancelled) {
+              updateProgress(text, pct, "Running on-device AI model");
+            }
+          });
+
+          if (!isTranscribingCancelled && transcriber) {
+            updateProgress("Transcribing spoken speech with on-device AI...", 70, "Detecting spoken words & precise timestamps");
+
+            // Process audio in 20-second safe chunks to ensure zero WebAssembly buffer overflows
+            const sampleRate = 16000;
+            const chunkDuration = 20; // 20s per chunk
+            const chunkSamples = chunkDuration * sampleRate;
+            const totalSamples = audioResult.audioData.length;
+            const totalChunks = Math.max(1, Math.ceil(totalSamples / chunkSamples));
+            let cueIndex = 1;
+            let lastEnd = 0;
+
+            const addCue = (start: number, end: number, text: string) => {
+              const cleanText = text.trim().toUpperCase();
+              if (!cleanText || isHallucination(cleanText)) return;
+
+              let cueStart = Number(Math.max(lastEnd, start).toFixed(1));
+              let cueEnd = Number(Math.max(cueStart + 0.6, end).toFixed(1));
+
+              if (generatedCues.length > 0) {
+                const prevCue = generatedCues[generatedCues.length - 1];
+                if (prevCue.text === cleanText && Math.abs(cueStart - prevCue.start) < 2.5) {
+                  prevCue.end = Math.max(prevCue.end, cueEnd);
+                  lastEnd = prevCue.end;
+                  return;
+                }
+                if (cueStart < prevCue.end) {
+                  cueStart = Number((prevCue.end + 0.05).toFixed(1));
+                  cueEnd = Number(Math.max(cueStart + 0.6, cueEnd).toFixed(1));
+                }
+              }
+
+              generatedCues.push({
+                id: String(cueIndex++),
+                start: cueStart,
+                end: cueEnd,
+                text: cleanText,
+              });
+              lastEnd = cueEnd;
+            };
+
+            for (let c = 0; c < totalChunks; c++) {
+              if (isTranscribingCancelled) break;
+              const startIdx = c * chunkSamples;
+              const endIdx = Math.min(totalSamples, (c + 1) * chunkSamples);
+              const chunkData = audioResult.audioData.slice(startIdx, endIdx);
+              const timeOffset = c * chunkDuration;
+
+              const pct = Math.round(70 + ((c + 1) / totalChunks) * 25);
+              updateProgress(`Transcribing speech part ${c + 1} of ${totalChunks}...`, pct, `Processed ${formatTime(timeOffset)}`);
+
+              try {
+                const transcribeOptions: any = {
+                  return_timestamps: true,
+                  task: "transcribe",
+                };
+                if (selectedLangRaw && selectedLangRaw !== "auto" && !selectedLangRaw.startsWith("en")) {
+                  const langCode = selectedLangRaw.split("-")[0];
+                  transcribeOptions.language = langCode;
+                }
+
+                const result = await transcriber(chunkData, transcribeOptions);
+                console.log(`[SubStudio] [Pipeline 2B] Chunk ${c + 1}/${totalChunks} result:`, result);
+
+                if (result && result.chunks && result.chunks.length > 0) {
+                  for (const segment of result.chunks) {
+                    const rawText = (segment.text || "").trim();
+                    if (!rawText || isHallucination(rawText)) continue;
+
+                    let segStart = (segment.timestamp?.[0] || 0) + timeOffset;
+                    let segEnd = (segment.timestamp?.[1] || 2.0) + timeOffset;
+                    if (segEnd <= segStart) segEnd = segStart + 2.0;
+
+                    const words = rawText.split(/\s+/).filter(Boolean);
+                    if (words.length <= 4) {
+                      addCue(segStart, segEnd, rawText);
+                    } else {
+                      const wordChunkSize = 3;
+                      const totalSubChunks = Math.ceil(words.length / wordChunkSize);
+                      const totalSpan = Math.max(0.6 * totalSubChunks, segEnd - segStart);
+                      const subSpan = totalSpan / totalSubChunks;
+
+                      for (let sc = 0; sc < totalSubChunks; sc++) {
+                        const subWords = words.slice(sc * wordChunkSize, (sc + 1) * wordChunkSize);
+                        const cStart = Number((segStart + sc * subSpan).toFixed(1));
+                        const cEnd = Number((segStart + (sc + 1) * subSpan - 0.05).toFixed(1));
+                        addCue(cStart, cEnd, subWords.join(" "));
+                      }
+                    }
+                  }
+                } else if (result && result.text && result.text.trim()) {
+                  const rawText = result.text.trim();
+                  if (!isHallucination(rawText)) {
+                    const words = rawText.split(/\s+/).filter(Boolean);
+                    const wordChunkSize = 3;
+                    const totalSubChunks = Math.max(1, Math.ceil(words.length / wordChunkSize));
+                    const chunkSpan = (endIdx - startIdx) / sampleRate;
+                    const subSpan = chunkSpan / totalSubChunks;
+
+                    for (let sc = 0; sc < totalSubChunks; sc++) {
+                      const subWords = words.slice(sc * wordChunkSize, (sc + 1) * wordChunkSize);
+                      const cStart = Number((timeOffset + sc * subSpan).toFixed(1));
+                      const cEnd = Number(((timeOffset + (sc + 1) * subSpan) - 0.05).toFixed(1));
+                      addCue(cStart, cEnd, subWords.join(" "));
+                    }
+                  }
+                }
+              } catch (chunkErr) {
+                console.warn(`[SubStudio] Chunk ${c + 1} transcription notice:`, chunkErr);
+              }
+            }
+
+            console.log(`[SubStudio] [Pipeline 2B Complete] Generated ${generatedCues.length} cues.`);
+          }
+        } catch (aiErr: any) {
+          transcriptionError = aiErr;
+          console.error("[SubStudio] AI Client Whisper Error:", aiErr);
+          sendCloudflareLog("error", "Client Whisper error", {
+            error: aiErr?.message || String(aiErr),
+          });
+        }
+      }
+    } else {
+      console.warn("[SubStudio] Skipped AI transcription: No audio waveform extracted or operation was cancelled.");
+      sendCloudflareLog("warn", "Skipped AI transcription: No audio extracted or cancelled");
     }
 
     if (isTranscribingCancelled) return;
 
-    // 3. Fallback: editable placeholder cues spanning the full video
+    // 3. Status notification if audio is silent or no spoken words detected
     if (generatedCues.length === 0) {
-      updateProgress("Preparing editable subtitle timeline...", 85, `Video duration: ${formatTime(duration)}`);
-      
-      const totalDur = Math.max(2, duration);
-      const idealChunkDur = Math.min(4.0, Math.max(2.0, totalDur / Math.ceil(totalDur / 3.0)));
-      const count = Math.max(1, Math.floor(totalDur / idealChunkDur));
-
-      for (let i = 0; i < count; i++) {
-        const start = Number((i * idealChunkDur).toFixed(1));
-        const end = Number(Math.min(totalDur, (i + 1) * idealChunkDur - 0.1).toFixed(1));
-        
-        generatedCues.push({
-          id: String(i + 1),
-          start,
-          end: Math.max(start + 0.8, end),
-          text: `[EDIT LINE ${i + 1}] Type your subtitle here`,
-        });
+      if (transcriptionError) {
+        console.warn(`[SubStudio] Transcription error: ${transcriptionError.message || transcriptionError}`);
+        updateProgress("Opening Studio Editor...", 95, "No subtitles generated (AI issue). Add lines manually anytime.");
+      } else {
+        console.log("[SubStudio] No spoken speech detected in audio track.");
+        updateProgress("Opening Studio Editor...", 95, "No speech detected in audio. Add lines manually or use Live Mic.");
       }
+    } else {
+      updateProgress("Complete!", 100, `Generated ${generatedCues.length} high-accuracy subtitle cues!`);
     }
-
-    updateProgress("Complete!", 100, "Opening Live Studio Editor");
     currentCues = generatedCues;
     renderCuesTable();
 
