@@ -167,6 +167,13 @@ const stylePresets = [
               class="text-[11px] text-[var(--color-mute)]"
               >Processing media file directly in your browser</span
             >
+            <button
+              id="cancel-transcribe-btn"
+              type="button"
+              class="mt-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-[var(--color-hairline)] text-[var(--color-ink)] bg-[var(--color-canvas)] hover:bg-[var(--color-canvas-soft-2)] hover:border-[var(--color-hairline-strong)] transition-all cursor-pointer shadow-sm"
+            >
+              Skip to Editor ➔
+            </button>
           </div>
         </div>
       </label>
@@ -1318,6 +1325,17 @@ const stylePresets = [
   const progressBar = document.getElementById("transcribe-progress-bar");
   const detailText = document.getElementById("transcribe-detail-text");
   const uploadMediaBtnText = document.getElementById("upload-media-btn-text");
+  const cancelTranscribeBtn = document.getElementById("cancel-transcribe-btn");
+
+  let activeMediaBlobUrl: string | null = null;
+  let isTranscribingCancelled = false;
+
+  cancelTranscribeBtn?.addEventListener("click", () => {
+    isTranscribingCancelled = true;
+    loadingOverlay?.classList.add("hidden");
+    switchTab("editor");
+    seekTo(0);
+  });
 
   function updateProgress(msg: string, pct: number, detail?: string) {
     if (statusText) statusText.textContent = msg;
@@ -1351,6 +1369,68 @@ const stylePresets = [
     const file = customMediaInput.files?.[0];
     if (file) handleLoadedMedia(file);
   });
+
+  // ─── Probing Media Duration & Dimensions Accurately ──────────
+  function probeMediaDuration(mediaEl: HTMLMediaElement): Promise<number> {
+    return new Promise((resolve) => {
+      if (isFinite(mediaEl.duration) && mediaEl.duration > 0) {
+        return resolve(mediaEl.duration);
+      }
+
+      let resolved = false;
+      const done = (dur: number) => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          resolve(Math.max(1, dur));
+        }
+      };
+
+      const onMetadata = () => {
+        if (isFinite(mediaEl.duration) && mediaEl.duration > 0) {
+          done(mediaEl.duration);
+        } else {
+          // Handle variable/streamed durations by seeking
+          const onSeeked = () => {
+            mediaEl.removeEventListener("seeked", onSeeked);
+            const dur = isFinite(mediaEl.duration) && mediaEl.duration > 0 ? mediaEl.duration : 10;
+            mediaEl.currentTime = 0;
+            done(dur);
+          };
+          mediaEl.addEventListener("seeked", onSeeked, { once: true });
+          try {
+            mediaEl.currentTime = 1e101;
+          } catch (_) {
+            done(10);
+          }
+        }
+      };
+
+      const onError = () => done(10);
+      const onCanPlay = () => {
+        if (isFinite(mediaEl.duration) && mediaEl.duration > 0) {
+          done(mediaEl.duration);
+        }
+      };
+
+      const cleanup = () => {
+        mediaEl.removeEventListener("loadedmetadata", onMetadata);
+        mediaEl.removeEventListener("canplay", onCanPlay);
+        mediaEl.removeEventListener("error", onError);
+      };
+
+      mediaEl.addEventListener("loadedmetadata", onMetadata, { once: true });
+      mediaEl.addEventListener("canplay", onCanPlay, { once: true });
+      mediaEl.addEventListener("error", onError, { once: true });
+
+      // Fallback timeout in case browser never fires metadata
+      setTimeout(() => {
+        if (!resolved) {
+          done(isFinite(mediaEl.duration) && mediaEl.duration > 0 ? mediaEl.duration : 10);
+        }
+      }, 3500);
+    });
+  }
 
   // ─── AI Speech-to-Text & Audio Extraction Engine ────────────
   let whisperPipeline: any = null;
@@ -1401,7 +1481,8 @@ const stylePresets = [
       try {
         decodedBuffer = await tempAudioCtx.decodeAudioData(arrayBuffer);
       } catch (e) {
-        console.warn("Direct container audio decode failed:", e);
+        console.warn("decodeAudioData failed for this container:", e);
+        try { await tempAudioCtx.close(); } catch (_) {}
         return null;
       } finally {
         try { await tempAudioCtx.close(); } catch (_) {}
@@ -1430,17 +1511,136 @@ const stylePresets = [
     }
   }
 
+  // ─── Fallback: Extract Audio via Video Element Capture ──────
+  async function extractAudioViaCapture(blobUrl: string, mediaDuration: number): Promise<Float32Array | null> {
+    return new Promise((resolve) => {
+      try {
+        const tempVideo = document.createElement("video");
+        tempVideo.crossOrigin = "anonymous";
+        tempVideo.preload = "auto";
+        tempVideo.muted = false;
+        tempVideo.volume = 0;
+        tempVideo.src = blobUrl;
+
+        const captureCtx = new AudioContext({ sampleRate: 16000 });
+        let sourceNode: MediaElementAudioSourceNode;
+        try {
+          sourceNode = captureCtx.createMediaElementSource(tempVideo);
+        } catch (_) {
+          captureCtx.close().catch(() => {});
+          resolve(null);
+          return;
+        }
+
+        const processor = captureCtx.createScriptProcessor(4096, 1, 1);
+        const chunks: Float32Array[] = [];
+        let totalSamples = 0;
+        const maxSamples = 30 * 16000; // Capture up to 30 seconds for Whisper
+
+        processor.onaudioprocess = (e) => {
+          if (totalSamples >= maxSamples) return;
+          const data = e.inputBuffer.getChannelData(0);
+          const copy = new Float32Array(data);
+          chunks.push(copy);
+          totalSamples += copy.length;
+        };
+
+        sourceNode.connect(processor);
+        processor.connect(captureCtx.destination);
+
+        const cleanup = () => {
+          try { processor.disconnect(); } catch (_) {}
+          try { sourceNode.disconnect(); } catch (_) {}
+          try { captureCtx.close(); } catch (_) {}
+          tempVideo.pause();
+          tempVideo.src = "";
+        };
+
+        const finishCapture = () => {
+          cleanup();
+          if (chunks.length === 0) {
+            resolve(null);
+            return;
+          }
+          const total = Math.min(totalSamples, maxSamples);
+          const result = new Float32Array(total);
+          let offset = 0;
+          for (const chunk of chunks) {
+            const remaining = total - offset;
+            if (remaining <= 0) break;
+            const copyLen = Math.min(chunk.length, remaining);
+            result.set(chunk.subarray(0, copyLen), offset);
+            offset += copyLen;
+          }
+          resolve(result);
+        };
+
+        tempVideo.onended = finishCapture;
+        tempVideo.onerror = () => { cleanup(); resolve(null); };
+
+        // Stop after 30 seconds or when enough samples collected
+        setTimeout(() => {
+          if (totalSamples > 0) finishCapture();
+          else { cleanup(); resolve(null); }
+        }, Math.min(35000, mediaDuration * 1000 + 2000));
+
+        tempVideo.oncanplay = () => {
+          tempVideo.playbackRate = 1;
+          tempVideo.play().catch(() => { cleanup(); resolve(null); });
+        };
+      } catch (_) {
+        resolve(null);
+      }
+    });
+  }
+
+  // ─── Whisper Hallucination Filter ───────────────────────────
+  function isHallucination(text: string): boolean {
+    const t = text.trim();
+    if (!t || t.length < 2) return true;
+
+    // Common Whisper-tiny hallucination patterns
+    const hallucinationPatterns = [
+      /^[\s.,!?…]+$/,                        // Only punctuation
+      /(.{3,})\1{2,}/i,                       // Same phrase repeated 3+ times
+      /^(thanks?|thank you)\s*(for watching|for listening)?\.?$/i,
+      /^(subscribe|like and subscribe|please subscribe)/i,
+      /^(music|applause|\[music\]|\[applause\])\s*$/i,
+      /^you$/i,
+      /^\s*\.{2,}\s*$/,                       // Just dots
+      /^(um|uh|hmm|ah)\s*$/i,                // Just filler words
+    ];
+
+    for (const pat of hallucinationPatterns) {
+      if (pat.test(t)) return true;
+    }
+
+    // Reject very short text that's just 1 character
+    if (t.replace(/\s/g, "").length < 2) return true;
+
+    return false;
+  }
+
   async function handleLoadedMedia(file: File) {
+    isTranscribingCancelled = false;
     loadingOverlay?.classList.remove("hidden");
-    updateProgress("Analyzing media format & audio tracks...", 10, file.name);
+    updateProgress("Loading media into player...", 15, file.name);
+
+    if (activeMediaBlobUrl) {
+      URL.revokeObjectURL(activeMediaBlobUrl);
+    }
 
     const fileUrl = URL.createObjectURL(file);
-    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|m4v)$/i.test(file.name);
+    activeMediaBlobUrl = fileUrl;
+
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|m4v|avi)$/i.test(file.name);
     const isAudio = file.type.startsWith("audio/") || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(file.name);
 
     if (uploadMediaBtnText) {
       uploadMediaBtnText.textContent = file.name.length > 18 ? `${file.name.substring(0, 15)}...` : file.name;
     }
+
+    let exactDuration = 12.5;
 
     if (isVideo) {
       mediaType = "video";
@@ -1455,18 +1655,20 @@ const stylePresets = [
         userAudioEl.src = "";
       }
 
-      userVideoEl.onloadedmetadata = () => {
-        duration = Math.max(3, Math.ceil(userVideoEl.duration));
-        updateTimeUI();
+      updateProgress("Detecting video format & duration...", 25, "Reading media metadata");
+      exactDuration = await probeMediaDuration(userVideoEl);
+      duration = exactDuration;
+      updateTimeUI();
 
+      if (userVideoEl.videoWidth && userVideoEl.videoHeight) {
         if (userVideoEl.videoWidth > userVideoEl.videoHeight) {
           setAspectRatio("16-9");
-        } else if (Math.abs(userVideoEl.videoWidth - userVideoEl.videoHeight) < 20) {
+        } else if (Math.abs(userVideoEl.videoWidth - userVideoEl.videoHeight) < 40) {
           setAspectRatio("1-1");
         } else {
           setAspectRatio("9-16");
         }
-      };
+      }
     } else if (isAudio) {
       mediaType = "audio";
       isCustomMediaLoaded = true;
@@ -1489,135 +1691,146 @@ const stylePresets = [
         audioDataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
       } catch (_) {}
 
-      userAudioEl.onloadedmetadata = () => {
-        duration = Math.max(3, Math.ceil(userAudioEl.duration));
-        updateTimeUI();
-      };
+      updateProgress("Detecting audio track length...", 25, "Reading audio headers");
+      exactDuration = await probeMediaDuration(userAudioEl);
+      duration = exactDuration;
+      updateTimeUI();
     }
 
+    if (isTranscribingCancelled) return;
+
     // 1. Extract audio track from media
-    updateProgress("Extracting speech audio from media...", 20, "Extracting 16kHz speech audio stream");
+    updateProgress("Extracting speech audio from media...", 40, "Decoding audio waveform for AI");
     let audioResult: { audioData: Float32Array; duration: number } | null = null;
     try {
       audioResult = await extractAudioData(file);
     } catch (err) {
-      console.warn("Audio extraction error:", err);
+      console.warn("Primary audio extraction error:", err);
+    }
+
+    // 1b. Fallback: capture audio from the video element if decodeAudioData failed
+    if (!audioResult && isVideo && activeMediaBlobUrl && !isTranscribingCancelled) {
+      updateProgress("Using video player audio capture fallback...", 45, "Capturing speech from video playback");
+      try {
+        const capturedAudio = await extractAudioViaCapture(activeMediaBlobUrl, duration);
+        if (capturedAudio && capturedAudio.length > 800) {
+          audioResult = { audioData: capturedAudio, duration: Math.min(30, duration) };
+        }
+      } catch (err) {
+        console.warn("Fallback audio capture error:", err);
+      }
     }
 
     if (audioResult && audioResult.duration > 0) {
-      duration = Math.max(3, Math.ceil(audioResult.duration));
+      duration = Math.max(duration, audioResult.duration);
       updateTimeUI();
     }
 
     let generatedCues: SubtitleCue[] = [];
 
-    // 2. Perform AI Speech Recognition (Whisper)
-    if (audioResult && audioResult.audioData && audioResult.audioData.length > 0) {
+    // 2. Perform AI Speech Recognition (Whisper — no premature timeout, Skip button available)
+    if (audioResult && audioResult.audioData && audioResult.audioData.length > 0 && !isTranscribingCancelled) {
       try {
-        updateProgress("Loading on-device AI transcription engine...", 35, "Whisper AI (Zero Server Uploads)");
+        updateProgress("Loading on-device AI transcription engine...", 55, "Whisper AI — Click 'Skip to Editor' if slow");
+
         const transcriber = await getWhisperPipeline((pct, text) => {
-          updateProgress(text, pct, "Running locally on device");
+          if (!isTranscribingCancelled) {
+            updateProgress(text, pct, "Running locally on device — Click 'Skip to Editor' anytime");
+          }
         });
 
-        updateProgress("Transcribing spoken speech with AI...", 70, "Detecting spoken words & precise timestamps");
+        if (!isTranscribingCancelled) {
+          updateProgress("Transcribing spoken speech with AI...", 75, "Detecting spoken words & precise timestamps");
 
-        const selectedLangRaw = speechLangSelect?.value || "auto";
-        const transcribeOptions: any = {
-          return_timestamps: true,
-          chunk_length_s: 30,
-          stride_length_s: 5,
-          task: "transcribe",
-        };
-        if (selectedLangRaw && selectedLangRaw !== "auto") {
-          const langCode = selectedLangRaw.split("-")[0];
-          transcribeOptions.language = langCode;
-        }
+          const selectedLangRaw = speechLangSelect?.value || "auto";
+          const transcribeOptions: any = {
+            return_timestamps: true,
+            chunk_length_s: 30,
+            stride_length_s: 5,
+            task: "transcribe",
+          };
+          if (selectedLangRaw && selectedLangRaw !== "auto") {
+            const langCode = selectedLangRaw.split("-")[0];
+            transcribeOptions.language = langCode;
+          }
 
-        const result = await transcriber(audioResult.audioData, transcribeOptions);
+          const result = await transcriber(audioResult.audioData, transcribeOptions);
 
-        if (result && result.chunks && result.chunks.length > 0) {
-          let cueIndex = 1;
-          for (const chunk of result.chunks) {
-            const rawText = (chunk.text || "").trim();
-            if (!rawText) continue;
+          if (result && result.chunks && result.chunks.length > 0) {
+            let cueIndex = 1;
+            for (const chunk of result.chunks) {
+              const rawText = (chunk.text || "").trim();
+              if (!rawText) continue;
 
-            let start = chunk.timestamp?.[0];
-            let end = chunk.timestamp?.[1];
+              // Filter out Whisper hallucinations
+              if (isHallucination(rawText)) continue;
 
-            if (start === null || start === undefined) start = 0;
-            if (end === null || end === undefined) end = Math.min(duration, start + 2.5);
+              let start = chunk.timestamp?.[0];
+              let end = chunk.timestamp?.[1];
 
-            start = Number(Number(start).toFixed(1));
-            end = Number(Math.max(start + 0.8, Number(end)).toFixed(1));
+              if (start === null || start === undefined) start = 0;
+              if (end === null || end === undefined) end = Math.min(duration, start + 2.5);
 
-            // Break long speech segments (> 5 words) into punchy, readable subtitle lines
-            const words = rawText.split(/\s+/).filter(Boolean);
-            if (words.length <= 5) {
-              generatedCues.push({
-                id: String(cueIndex++),
-                start,
-                end,
-                text: rawText.toUpperCase(),
-              });
-            } else {
-              const chunkSize = 4;
-              const totalSubChunks = Math.ceil(words.length / chunkSize);
-              const chunkSpan = (end - start) / totalSubChunks;
-              for (let c = 0; c < totalSubChunks; c++) {
-                const subWords = words.slice(c * chunkSize, (c + 1) * chunkSize);
-                const cStart = Number((start + c * chunkSpan).toFixed(1));
-                const cEnd = Number((cStart + chunkSpan - 0.05).toFixed(1));
+              start = Number(Number(start).toFixed(1));
+              end = Number(Math.max(start + 0.8, Number(end)).toFixed(1));
+
+              // Break long speech segments (> 5 words) into punchy, readable subtitle lines
+              const words = rawText.split(/\s+/).filter(Boolean);
+              if (words.length <= 5) {
                 generatedCues.push({
                   id: String(cueIndex++),
-                  start: cStart,
-                  end: Math.max(cStart + 0.6, cEnd),
-                  text: subWords.join(" ").toUpperCase(),
+                  start,
+                  end,
+                  text: rawText.toUpperCase(),
                 });
+              } else {
+                const chunkSize = 4;
+                const totalSubChunks = Math.ceil(words.length / chunkSize);
+                const chunkSpan = (end - start) / totalSubChunks;
+                for (let c = 0; c < totalSubChunks; c++) {
+                  const subWords = words.slice(c * chunkSize, (c + 1) * chunkSize);
+                  const cStart = Number((start + c * chunkSpan).toFixed(1));
+                  const cEnd = Number((cStart + chunkSpan - 0.05).toFixed(1));
+                  generatedCues.push({
+                    id: String(cueIndex++),
+                    start: cStart,
+                    end: Math.max(cStart + 0.6, cEnd),
+                    text: subWords.join(" ").toUpperCase(),
+                  });
+                }
               }
             }
           }
-        } else if (result && typeof result.text === "string" && result.text.trim()) {
-          const words = result.text.trim().split(/\s+/).filter(Boolean);
-          const chunkSize = 4;
-          const totalChunks = Math.ceil(words.length / chunkSize);
-          const dur = duration || 10;
-          const chunkDur = dur / totalChunks;
-          for (let c = 0; c < totalChunks; c++) {
-            const subWords = words.slice(c * chunkSize, (c + 1) * chunkSize);
-            const cStart = Number((c * chunkDur).toFixed(1));
-            const cEnd = Number(Math.min(dur, (c + 1) * chunkDur - 0.1).toFixed(1));
-            generatedCues.push({
-              id: String(c + 1),
-              start: cStart,
-              end: Math.max(cStart + 0.6, cEnd),
-              text: subWords.join(" ").toUpperCase(),
-            });
-          }
         }
       } catch (aiErr) {
-        console.error("AI Transcription error:", aiErr);
+        console.warn("AI Whisper notice:", aiErr);
       }
     }
 
-    // 3. Fallback only if no speech was detected in audio / muted file
+    if (isTranscribingCancelled) return;
+
+    // 3. Fallback: editable placeholder cues spanning the full video
     if (generatedCues.length === 0) {
-      updateProgress("Finalizing subtitle cues...", 85, "Ready to edit");
-      const dur = duration || 10;
-      const chunkDur = Math.min(2.5, dur / 3);
-      const count = Math.max(2, Math.floor(dur / chunkDur));
+      updateProgress("Preparing editable subtitle timeline...", 85, `Video duration: ${formatTime(duration)}`);
+      
+      const totalDur = Math.max(2, duration);
+      const idealChunkDur = Math.min(4.0, Math.max(2.0, totalDur / Math.ceil(totalDur / 3.0)));
+      const count = Math.max(1, Math.floor(totalDur / idealChunkDur));
+
       for (let i = 0; i < count; i++) {
-        const start = Number((i * chunkDur).toFixed(1));
-        const end = Number(Math.min(dur, (i + 1) * chunkDur - 0.1).toFixed(1));
+        const start = Number((i * idealChunkDur).toFixed(1));
+        const end = Number(Math.min(totalDur, (i + 1) * idealChunkDur - 0.1).toFixed(1));
+        
         generatedCues.push({
           id: String(i + 1),
           start,
-          end: Math.max(start + 0.6, end),
-          text: i === 0 ? "ADD YOUR SUBTITLES HERE" : `SUBTITLE LINE ${i + 1}`,
+          end: Math.max(start + 0.8, end),
+          text: `[EDIT LINE ${i + 1}] Type your subtitle here`,
         });
       }
     }
 
-    updateProgress("Complete!", 100);
+    updateProgress("Complete!", 100, "Opening Live Studio Editor");
     currentCues = generatedCues;
     renderCuesTable();
 
@@ -1625,7 +1838,16 @@ const stylePresets = [
       loadingOverlay?.classList.add("hidden");
       switchTab("editor");
       seekTo(0);
-    }, 400);
+
+      // Auto-play the video so it's not frozen
+      if (mediaType === "video" && userVideoEl && userVideoEl.src) {
+        userVideoEl.currentTime = 0;
+        userVideoEl.play().then(() => setPlayingState(true)).catch(() => {});
+      } else if (mediaType === "audio" && userAudioEl && userAudioEl.src) {
+        userAudioEl.currentTime = 0;
+        userAudioEl.play().then(() => setPlayingState(true)).catch(() => {});
+      }
+    }, 350);
   }
 
   // ─── Live Microphone Speech Recognition ─────────────────────
@@ -1805,7 +2027,7 @@ const stylePresets = [
         renderCuesTable();
         updateTimeUI();
         switchTab("editor");
-      }, 500);
+      }, 400);
     });
   });
 
@@ -2047,30 +2269,52 @@ const stylePresets = [
     if (!canvas) return;
 
     const hasVideo = mediaType === "video" && userVideoEl && userVideoEl.src;
-    if (burnVideoLabel) burnVideoLabel.textContent = "Rendering Video... (Please wait)";
+    if (burnVideoLabel) burnVideoLabel.textContent = "Preparing Video Render...";
     burnVideoBtn.setAttribute("disabled", "true");
 
     const recordCanvas = document.createElement("canvas");
     recordCanvas.width = hasVideo && userVideoEl.videoWidth ? userVideoEl.videoWidth : 720;
     recordCanvas.height = hasVideo && userVideoEl.videoHeight ? userVideoEl.videoHeight : 1280;
     const rctx = recordCanvas.getContext("2d");
-    if (!rctx) return;
+    if (!rctx) {
+      burnVideoBtn.removeAttribute("disabled");
+      return;
+    }
 
-    const stream = recordCanvas.captureStream(30);
+    const canvasStream = recordCanvas.captureStream(30);
+    let combinedStream: MediaStream = canvasStream;
+
+    // Combine audio track from original video/audio element if available
+    try {
+      let mediaStreamSrc: any = null;
+      if (hasVideo && (userVideoEl as any).captureStream) {
+        mediaStreamSrc = (userVideoEl as any).captureStream();
+      } else if (hasVideo && (userVideoEl as any).mozCaptureStream) {
+        mediaStreamSrc = (userVideoEl as any).mozCaptureStream();
+      }
+
+      if (mediaStreamSrc) {
+        const audioTracks = mediaStreamSrc.getAudioTracks();
+        if (audioTracks && audioTracks.length > 0) {
+          combinedStream = new MediaStream([...canvasStream.getVideoTracks(), audioTracks[0]]);
+        }
+      }
+    } catch (_) {}
+
     let mediaRecorder: MediaRecorder;
     try {
-      mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+      mediaRecorder = new MediaRecorder(combinedStream, { mimeType: "video/webm;codecs=vp9" });
     } catch (_) {
       try {
-        mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+        mediaRecorder = new MediaRecorder(combinedStream, { mimeType: "video/webm" });
       } catch (_) {
-        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder = new MediaRecorder(combinedStream);
       }
     }
 
     const chunks: Blob[] = [];
     mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunks.push(e.data);
+      if (e.data && e.data.size > 0) chunks.push(e.data);
     };
 
     mediaRecorder.onstop = () => {
@@ -2094,7 +2338,8 @@ const stylePresets = [
     mediaRecorder.start();
 
     let renderTime = 0;
-    const renderDuration = Math.min(15, duration);
+    // Export the COMPLETE video duration (not capped!)
+    const renderDuration = Math.max(1, duration);
     const fps = 30;
     const frameInterval = 1000 / fps;
 
@@ -2106,7 +2351,12 @@ const stylePresets = [
     const renderInterval = setInterval(() => {
       renderTime += 1 / fps;
 
-      // Draw background video frame or canvas
+      const pct = Math.min(99, Math.round((renderTime / renderDuration) * 100));
+      if (burnVideoLabel) {
+        burnVideoLabel.textContent = `Rendering ${pct}% (${formatTime(renderTime)} / ${formatTime(renderDuration)})`;
+      }
+
+      // Draw background video frame or motion canvas
       if (hasVideo && userVideoEl.videoWidth) {
         rctx.drawImage(userVideoEl, 0, 0, recordCanvas.width, recordCanvas.height);
       } else {
@@ -2139,7 +2389,9 @@ const stylePresets = [
       if (renderTime >= renderDuration) {
         clearInterval(renderInterval);
         if (hasVideo) userVideoEl.pause();
-        mediaRecorder.stop();
+        if (mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
       }
     }, frameInterval);
   });
